@@ -1,0 +1,1 @@
+hstart.exe /NOCONSOLE run_app.bat
