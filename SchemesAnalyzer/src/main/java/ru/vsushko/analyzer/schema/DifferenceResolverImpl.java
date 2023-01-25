@@ -1,25 +1,22 @@
 package ru.vsushko.analyzer.schema;
 
-import org.apache.log4j.Logger;
 import ru.vsushko.analyzer.schema.tree.TreeHelper;
 import ru.vsushko.analyzer.schema.tree.TreeNode;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
  * Created by vsa
  * Date: 21.12.14.
  */
 public class DifferenceResolverImpl implements DifferenceResolver {
-    private static Logger log = Logger.getLogger(SchemaInfo.class);
 
-    private List<String> differences;
+    private final List<String> differences;
 
     public DifferenceResolverImpl() {
-        differences = new ArrayList<String>();
+        differences = new ArrayList<>();
     }
 
     /**
@@ -30,7 +27,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
         String newSchemaDescription = TreeHelper.getSchemaDescription(schemaToCompareTree);
 
         if (!oldSchemaDescription.equals(newSchemaDescription)) {
-            differences.add(encodeString("Изменено описание документа: " + newSchemaDescription));
+            differences.add(encodeString("Changed document description: " + newSchemaDescription));
         }
     }
 
@@ -82,8 +79,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
         }
 
         // проверка на то, были ли удалены SimpleType типы объявленные ранее
-        List<String> preExistingSimpleTypes =
-                SchemaHelper.getPreExistingSimpleTypes(oldAfSimpleTypeNames, newAfSimpleTypeNames);
+        List<String> preExistingSimpleTypes = SchemaHelper.getPreExistingSimpleTypes(oldAfSimpleTypeNames, newAfSimpleTypeNames);
 
         if (preExistingSimpleTypes.size() != 0) {
             for (String element : preExistingSimpleTypes) {
@@ -97,9 +93,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
         // список может быть пустым, потому что SimpleType типов нету в схеме
         if (sameSimpleTypeNames.size() != 0) {
             // проверка на изменения в SimpleType
-            List<String> simpleTypeChanges = SchemaHelper.getDifferenceBetweenSimpleTypes(
-                    TreeHelper.getSimpleTypesFromSchemaBySpecificNames(actualSchemaTree, sameSimpleTypeNames),
-                    TreeHelper.getSimpleTypesFromSchemaBySpecificNames(schemaToCompareTree, sameSimpleTypeNames));
+            List<String> simpleTypeChanges = SchemaHelper.getDifferenceBetweenSimpleTypes(TreeHelper.getSimpleTypesFromSchemaBySpecificNames(actualSchemaTree, sameSimpleTypeNames), TreeHelper.getSimpleTypesFromSchemaBySpecificNames(schemaToCompareTree, sameSimpleTypeNames));
 
             if (simpleTypeChanges.size() != 0) {
                 for (String diffString : simpleTypeChanges) {
@@ -129,8 +123,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
             }
 
             // проверка на то, были ли удалены элементы ComplexType объявленные ранее
-            List<String> preExistingComplexTypes =
-                    SchemaHelper.getPreExistingComplexTypes(oldAfComplexTypeNames, newAfComplexTypeNames);
+            List<String> preExistingComplexTypes = SchemaHelper.getPreExistingComplexTypes(oldAfComplexTypeNames, newAfComplexTypeNames);
 
             if (preExistingComplexTypes.size() != 0) {
                 for (String element : preExistingComplexTypes) {
@@ -144,9 +137,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
             // список может быть пустым, потому что ComplexType элементов нету в схеме
             if (sameComplexTypeNames.size() != 0) {
                 // проверка на изменения в ComplexType
-                List<String> complexTypeChanges = SchemaHelper.getDifferenceBetweenComplexTypes(
-                        TreeHelper.getComplexTypesFromSchemaBySpecificNames(actualSchemaTree, sameComplexTypeNames),
-                        TreeHelper.getComplexTypesFromSchemaBySpecificNames(schemaToCompareTree, sameComplexTypeNames));
+                List<String> complexTypeChanges = SchemaHelper.getDifferenceBetweenComplexTypes(TreeHelper.getComplexTypesFromSchemaBySpecificNames(actualSchemaTree, sameComplexTypeNames), TreeHelper.getComplexTypesFromSchemaBySpecificNames(schemaToCompareTree, sameComplexTypeNames));
 
                 if (complexTypeChanges.size() != 0) {
                     for (String diffString : complexTypeChanges) {
@@ -179,13 +170,8 @@ public class DifferenceResolverImpl implements DifferenceResolver {
      * Кодирут в ISO-8859-1 для JTextArea.
      */
     public String encodeString(String s) {
-        String result = "";
-        try {
-            result = new String(s.getBytes("UTF-8"), "ISO-8859-1");
-            return result;
-        } catch (UnsupportedEncodingException e) {
-            log.debug("Ошибка при кодировании строки: кодировка ISO-8859-1 не поддерживается");
-        }
+        String result;
+        result = new String(s.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
         return result;
     }
 }
