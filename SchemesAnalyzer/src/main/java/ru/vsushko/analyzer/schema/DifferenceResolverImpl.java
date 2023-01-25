@@ -20,19 +20,19 @@ public class DifferenceResolverImpl implements DifferenceResolver {
     }
 
     /**
-     * Проверка на изменения в описании схемы.
+     * Schema description difference check.
      */
     public void checkDifferenceBetweenSchemaDescription(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
         String oldSchemaDescription = TreeHelper.getSchemaDescription(actualSchemaTree);
         String newSchemaDescription = TreeHelper.getSchemaDescription(schemaToCompareTree);
 
         if (!oldSchemaDescription.equals(newSchemaDescription)) {
-            differences.add(encodeString("Changed document description: " + newSchemaDescription));
+            differences.add(encodeString("Changed schema description: " + newSchemaDescription));
         }
     }
 
     /**
-     * Проверка на изменения в импортах.
+     * Schema imports changes check.
      */
     public void checkDifferenceBetweenSchemaImports(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
         List<String> addedImports = SchemaHelper.getAddedImports(actualSchemaTree, schemaToCompareTree);
@@ -40,59 +40,58 @@ public class DifferenceResolverImpl implements DifferenceResolver {
 
         if (addedImports.size() != 0) {
             for (String importString : addedImports) {
-                differences.add(encodeString("Добавлена зависимость структуры электронного документа от " + getSchemaImportName(importString) + "\n"));
+                differences.add(encodeString("Added document dependency: " + getSchemaImportName(importString) + "\n"));
             }
         }
 
         if (removedImports.size() != 0) {
             for (String importString : removedImports) {
-                differences.add(encodeString("Удалена прямая зависимость структуры электронного документа от " + getSchemaImportName(importString) + "\n"));
+                differences.add(encodeString("Removed document dependency: " + getSchemaImportName(importString) + "\n"));
             }
         }
     }
 
     /**
-     * Извлекает из импорта зависимость от схемы, и строит строку "Имя схемы" + расширение.
+     * Extracts dependency from schema import and creates string "schema name + file format".
      */
     private String getSchemaImportName(String importString) {
         String[] bits = importString.split(":");
-        // позиция имени схемы всегда фиксированна
+        // schema name position are always fixed
         return bits[bits.length - 2] + ".xsd";
     }
 
     /**
-     * Проверка на изменения в SimpleType элементах.
+     * Schema SimpleType elements changes check.
      */
     public void checkDifferenceBetweenSimpleTypes(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
-
-        // найдем список имен всех SimpleType
+        // find all SimpleType names
         List<String> oldAfSimpleTypeNames = TreeHelper.getSimpleTypesNamesFromTree(actualSchemaTree);
         List<String> newAfSimpleTypeNames = TreeHelper.getSimpleTypesNamesFromTree(schemaToCompareTree);
 
-        // проверка на сущестсование новых SimpleType типов
+        // check for new SimpleType types existence
         List<String> newSimpleTypes = SchemaHelper.getNewSimpleTypes(oldAfSimpleTypeNames, newAfSimpleTypeNames);
 
         if (newSimpleTypes.size() != 0) {
             for (String element : newSimpleTypes) {
-                differences.add(encodeString("Добавлен локальный тип " + element + "\n"));
+                differences.add(encodeString("Added new local type element: " + element + "\n"));
             }
         }
 
-        // проверка на то, были ли удалены SimpleType типы объявленные ранее
+        // old SimpleTypes deletions check
         List<String> preExistingSimpleTypes = SchemaHelper.getPreExistingSimpleTypes(oldAfSimpleTypeNames, newAfSimpleTypeNames);
 
         if (preExistingSimpleTypes.size() != 0) {
             for (String element : preExistingSimpleTypes) {
-                differences.add(encodeString("Удален элемент " + element + "\n"));
+                differences.add(encodeString("Removed local type element: " + element + "\n"));
             }
         }
 
-        // получим список SimpleType, у которых имена совпадают
+        // retrieves SimpleTypes list with the same names
         List<String> sameSimpleTypeNames = SchemaHelper.getSameTypeNames(oldAfSimpleTypeNames, newAfSimpleTypeNames);
 
-        // список может быть пустым, потому что SimpleType типов нету в схеме
+        // the list may be empty because there are no SimpleType types in the schema
         if (sameSimpleTypeNames.size() != 0) {
-            // проверка на изменения в SimpleType
+            // check for changes in SimpleType
             List<String> simpleTypeChanges = SchemaHelper.getDifferenceBetweenSimpleTypes(TreeHelper.getSimpleTypesFromSchemaBySpecificNames(actualSchemaTree, sameSimpleTypeNames), TreeHelper.getSimpleTypesFromSchemaBySpecificNames(schemaToCompareTree, sameSimpleTypeNames));
 
             if (simpleTypeChanges.size() != 0) {
@@ -104,39 +103,39 @@ public class DifferenceResolverImpl implements DifferenceResolver {
     }
 
     /**
-     * Проверка на существование новых ComplexType типов.
+     * Check for new ComplexType types existence.
      */
     public void checkDifferenceBetweenComplexTypes(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
-        // найдем список имен всех ComplexType
+        // find all ComplexType names
         List<String> oldAfComplexTypeNames = TreeHelper.getComplexTypesNamesFromTree(actualSchemaTree);
         List<String> newAfComplexTypeNames = TreeHelper.getComplexTypesNamesFromTree(schemaToCompareTree);
 
-        // нет ComplexType элементов в схеме
+        // there is no ComplexType elements in schema
         if (oldAfComplexTypeNames.size() != 0 && newAfComplexTypeNames.size() != 0) {
-            // проверка на существование новых ComplexType типов
+            //  retrieves new ComplexType types
             List<String> newComplexTypes = SchemaHelper.getNewComplexTypes(oldAfComplexTypeNames, newAfComplexTypeNames);
 
             if (newComplexTypes.size() != 0) {
                 for (String element : newComplexTypes) {
-                    differences.add(encodeString("Добавлен локальный тип " + element + "\n"));
+                    differences.add(encodeString("Added new ComplexType: " + element + "\n"));
                 }
             }
 
-            // проверка на то, были ли удалены элементы ComplexType объявленные ранее
+            // check for ComplexType deletion which were specified earlier
             List<String> preExistingComplexTypes = SchemaHelper.getPreExistingComplexTypes(oldAfComplexTypeNames, newAfComplexTypeNames);
 
             if (preExistingComplexTypes.size() != 0) {
                 for (String element : preExistingComplexTypes) {
-                    differences.add(encodeString("Удален элемент " + element + "\n"));
+                    differences.add(encodeString("ComplexType was removed: " + element + "\n"));
                 }
             }
 
-            // получим список ComplexType, у которых имена совпадают
+            // retrieve ComplexTypes list with the same names
             List<String> sameComplexTypeNames = SchemaHelper.getSameTypeNames(oldAfComplexTypeNames, newAfComplexTypeNames);
 
-            // список может быть пустым, потому что ComplexType элементов нету в схеме
+            // the list may be empty because there are no ComplexType types in the schema
             if (sameComplexTypeNames.size() != 0) {
-                // проверка на изменения в ComplexType
+                // ComplexType differences checks
                 List<String> complexTypeChanges = SchemaHelper.getDifferenceBetweenComplexTypes(TreeHelper.getComplexTypesFromSchemaBySpecificNames(actualSchemaTree, sameComplexTypeNames), TreeHelper.getComplexTypesFromSchemaBySpecificNames(schemaToCompareTree, sameComplexTypeNames));
 
                 if (complexTypeChanges.size() != 0) {
@@ -149,7 +148,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
     }
 
     /**
-     * Все изменения в схемах.
+     * All schemas checks.
      */
     public void findAllDifference(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
         checkDifferenceBetweenSchemaDescription(actualSchemaTree, schemaToCompareTree);
@@ -159,7 +158,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
     }
 
     /**
-     * Возвращает список изменений, выявленных при сравнении двух схем.
+     * Returns list of changes which were identified during schemas difference comparison
      */
     @Override
     public List<String> getDifferences() {
@@ -167,7 +166,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
     }
 
     /**
-     * Кодирут в ISO-8859-1 для JTextArea.
+     * Encodes s to ISO-8859-1 for JTextArea.
      */
     public String encodeString(String s) {
         String result;
