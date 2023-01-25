@@ -15,10 +15,10 @@ import java.io.File;
 public class FindNewSchemasTask extends Task<Void> {
     private static final String LINE_SEPARATOR = "\n==================================================================================\n";
 
-    private File[] schemas;
-    private String pathToOldSchemas;
-    private String pathToNewSchemas;
-    private TextArea textArea;
+    private final File[] schemas;
+    private final String pathToOldSchemas;
+    private final String pathToNewSchemas;
+    private final TextArea textArea;
 
     public FindNewSchemasTask(File[] schemas, String pathToOldSchemas, String pathToNewSchemas, TextArea textArea) {
         this.schemas = schemas;
@@ -28,27 +28,24 @@ public class FindNewSchemasTask extends Task<Void> {
     }
 
     @Override
-    protected Void call() throws Exception {
+    protected Void call() {
         for (int i = 0; i < schemas.length; i++) {
             File schemaFile = schemas[i];
             final String commonSchemaName = schemaFile.getName();
 
-            String pathToPreviousSchema = pathToOldSchemas + "\\" + commonSchemaName;
-            final String pathToRecentSchema = pathToNewSchemas + "\\" + commonSchemaName;
+            String pathToPreviousSchema = pathToOldSchemas + "/" + commonSchemaName;
+            final String pathToRecentSchema = pathToNewSchemas + "/" + commonSchemaName;
 
             final XmlSchema oldAfSchema = SchemaHelper.getSchemaFromPath(pathToPreviousSchema);
 
             final int finalI = i;
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (oldAfSchema == null) {
-                        setTextAreaText("Добавлена новая схема: " + commonSchemaName + "\n");
-                        setTextAreaText("Описание наименования XSD-схемы: " + SchemaHelper.getSchemaDescription(pathToRecentSchema));
-                        setTextAreaText(LINE_SEPARATOR);
-                    }
-                    updateProgress(finalI, schemas.length);
+            Platform.runLater(() -> {
+                if (oldAfSchema == null) {
+                    setTextAreaText("A new schema was added: " + commonSchemaName + "\n");
+                    setTextAreaText("XSD-schema description: " + SchemaHelper.getSchemaDescription(pathToRecentSchema));
+                    setTextAreaText(LINE_SEPARATOR);
                 }
+                updateProgress(finalI, schemas.length);
             });
         }
         return null;
