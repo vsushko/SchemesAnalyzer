@@ -15,10 +15,10 @@ import java.io.File;
 public class FindRemovedSchemasTask extends Task<Void> {
     private static final String LINE_SEPARATOR = "\n==================================================================================\n";
 
-    private File[] schemas;
-    private String pathToOldSchemas;
-    private String pathToNewSchemas;
-    private TextArea textArea;
+    private final File[] schemas;
+    private final String pathToOldSchemas;
+    private final String pathToNewSchemas;
+    private final TextArea textArea;
 
     public FindRemovedSchemasTask(File[] schemas, String pathToOldSchemas, String pathToNewSchemas, TextArea textArea) {
         this.schemas = schemas;
@@ -28,27 +28,24 @@ public class FindRemovedSchemasTask extends Task<Void> {
     }
 
     @Override
-    protected Void call() throws Exception {
+    protected Void call() {
         for (int i = 0; i < schemas.length; i++) {
             File schemaFile = schemas[i];
             final String commonSchemaName = schemaFile.getName();
 
-            final String pathToRecentSchema = pathToNewSchemas + "\\" + commonSchemaName;
-            final String pathToPreviousSchema = pathToOldSchemas + "\\" + commonSchemaName;
+            final String pathToRecentSchema = pathToNewSchemas + "/" + commonSchemaName;
+            final String pathToPreviousSchema = pathToOldSchemas + "/" + commonSchemaName;
 
             final XmlSchema newAfSchema = SchemaHelper.getSchemaFromPath(pathToRecentSchema);
 
             final int finalI = i;
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (newAfSchema == null) {
-                        setTextAreaText("Удалена схема: " + commonSchemaName + "\n");
-                        setTextAreaText("Описание наименования XSD-схемы: " + SchemaHelper.getSchemaDescription(pathToPreviousSchema));
-                        setTextAreaText(LINE_SEPARATOR);
-                    }
-                    updateProgress(finalI, schemas.length);
+            Platform.runLater(() -> {
+                if (newAfSchema == null) {
+                    setTextAreaText("This schema was deleted: " + commonSchemaName + "\n");
+                    setTextAreaText("XSD-schema description: " + SchemaHelper.getSchemaDescription(pathToPreviousSchema));
+                    setTextAreaText(LINE_SEPARATOR);
                 }
+                updateProgress(finalI, schemas.length);
             });
         }
         return null;
