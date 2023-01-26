@@ -31,8 +31,8 @@ public class ElementImpl implements Element {
 
     @Override
     public String getMaxOccurs(XmlSchemaElement schemaElement) {
-        // чей баг?.. если у MaxOccurs имеет значение unbounded,
-        // то получаем строку в виде long
+        // there is a bug.. if MaxOccurs has "unbounded"
+        // value then we receive long value as a String
         return String.valueOf(schemaElement.getMaxOccurs());
     }
 

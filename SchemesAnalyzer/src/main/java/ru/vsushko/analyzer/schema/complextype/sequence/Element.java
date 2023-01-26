@@ -9,33 +9,32 @@ import org.apache.ws.commons.schema.XmlSchemaElement;
 public interface Element {
 
     /**
-     * Возвращает имя элемента.
+     * Returns XmlSchemaElement name.
      */
     String getName(XmlSchemaElement schemaElement);
 
     /**
-     * Возвращает тип элемента.
+     * Returns XmlSchemaElement type.
      */
     String getType(XmlSchemaElement schemaElement);
 
     /**
-     * Возвращает префикс элемента.
+     * Returns XmlSchemaElement prefix.
      */
     String getPrefix(XmlSchemaElement schemaElement);
 
     /**
-     * Возвращает MinOccurs элемента.
+     * Returns XmlSchemaElement MinOccur.
      */
     String getMinOccurs(XmlSchemaElement schemaElement);
 
     /**
-     * Возвращает MaxOccurs элемента.
+     * Returns XmlSchemaElement MaxOccurs.
      */
     String getMaxOccurs(XmlSchemaElement schemaElement);
 
     /**
-     * Возвращает описание элемента.
+     * Returns XmlSchemaElement description.
      */
     String getDescription(XmlSchemaElement schemaElement);
-
 }
