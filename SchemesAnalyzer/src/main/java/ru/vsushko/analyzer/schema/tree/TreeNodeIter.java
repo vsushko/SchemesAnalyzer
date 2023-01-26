@@ -8,22 +8,17 @@ import java.util.Iterator;
  */
 public class TreeNodeIter<T> implements Iterator<TreeNode<T>> {
 
-    enum ProcessStages {
-        ProcessParent, ProcessChildCurNode, ProcessChildSubNode
-    }
-
-    private TreeNode<T> treeNode;
+    private final TreeNode<T> treeNode;
+    private final Iterator<TreeNode<T>> childrenCurNodeIter;
+    private ProcessStages doNext;
+    private TreeNode<T> next;
+    private Iterator<TreeNode<T>> childrenSubNodeIter;
 
     public TreeNodeIter(TreeNode<T> treeNode) {
         this.treeNode = treeNode;
         this.doNext = ProcessStages.ProcessParent;
         this.childrenCurNodeIter = treeNode.children.iterator();
     }
-
-    private ProcessStages doNext;
-    private TreeNode<T> next;
-    private Iterator<TreeNode<T>> childrenCurNodeIter;
-    private Iterator<TreeNode<T>> childrenSubNodeIter;
 
     @Override
     public boolean hasNext() {
@@ -70,4 +65,7 @@ public class TreeNodeIter<T> implements Iterator<TreeNode<T>> {
         throw new UnsupportedOperationException();
     }
 
+    enum ProcessStages {
+        ProcessParent, ProcessChildCurNode, ProcessChildSubNode
+    }
 }

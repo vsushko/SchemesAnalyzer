@@ -19,17 +19,17 @@ public class TreeHelper {
     }
 
     /**
-     * Возвращает описание схемы.
+     * Returns schema description.
      */
     public static String getSchemaDescription(TreeNode<Object> node) {
         return (String) ((TreeNode) ((TreeNode) node.children.get(0).data).children.get(0)).data;
     }
 
     /**
-     * Возвращащает список импортов.
+     * Returns imports list.
      */
     public static List<String> getSchemaImports(TreeNode<Object> schemaTree) {
-        List<String> importNames = new ArrayList<String>();
+        List<String> importNames = new ArrayList<>();
 
         List<TreeNode<Object>> schemaImports = ((TreeNode) schemaTree.children.get(2).data).children;
 
@@ -42,7 +42,7 @@ public class TreeHelper {
     }
 
     /**
-     * Создает дерево схемы.
+     * Creates schema tree.
      */
     public static TreeNode<Object> buildSchemaTree(XmlSchema oldAfSchema, String schemaPath) {
         TreeBuilder treeBuilder = new TreeBuilderImpl();
@@ -50,15 +50,15 @@ public class TreeHelper {
     }
 
     /**
-     * Возвращает имена SimpleType элементов.
+     * Retuurns SimpleType elements names.
      */
     public static List<String> getSimpleTypesNamesFromTree(TreeNode<Object> schemaTree) {
-        List<String> simpleTypesNames = new ArrayList<String>();
+        List<String> simpleTypesNames = new ArrayList<>();
 
         List<TreeNode<Object>> simpleTypes = ((TreeNode) schemaTree.children.get(3).data).children;
 
         for (TreeNode<Object> simpleType : simpleTypes) {
-            String typeName = ((XmlSchemaSimpleType)(simpleType.data)).getName();
+            String typeName = ((XmlSchemaSimpleType) (simpleType.data)).getName();
 
             if (typeName != null) {
                 simpleTypesNames.add(typeName);
@@ -68,19 +68,18 @@ public class TreeHelper {
     }
 
     /**
-     * Возвращает список SimpleType с указанными именами.
+     * Returns SimpleType list with specified names.
      */
-    public static List<XmlSchemaSimpleType> getSimpleTypesFromSchemaBySpecificNames(TreeNode<Object> oldSchemaTree,
-                                                                                    List<String> specificNames) {
-        List<XmlSchemaSimpleType> filteredSimpleTypes = new ArrayList<XmlSchemaSimpleType>();
+    public static List<XmlSchemaSimpleType> getSimpleTypesFromSchemaBySpecificNames(TreeNode<Object> oldSchemaTree, List<String> specificNames) {
+        List<XmlSchemaSimpleType> filteredSimpleTypes = new ArrayList<>();
 
-        // достанем все SimpleType из дерева
+        // take all SimpleType children from tree
         List<TreeNode<Object>> simpleTypes = ((TreeNode) oldSchemaTree.children.get(3).data).children;
 
         for (TreeNode<Object> simpleType : simpleTypes) {
             String typeName = ((XmlSchemaSimpleType) (simpleType.data)).getName();
 
-            // добавляем только нужные SimpleType
+            // add only necessary SimpleType data
             if (typeName != null && specificNames.contains(typeName)) {
                 filteredSimpleTypes.add((XmlSchemaSimpleType) simpleType.data);
             }
@@ -89,10 +88,10 @@ public class TreeHelper {
     }
 
     /**
-     * Возвращает имена ComplexType элементов.
+     * Returns ComplexType elements names.
      */
     public static List<String> getComplexTypesNamesFromTree(TreeNode<Object> schemaTree) {
-        List<String> complexTypeNames = new ArrayList<String>();
+        List<String> complexTypeNames = new ArrayList<>();
 
         List<TreeNode<Object>> complexTypes = ((TreeNode) schemaTree.children.get(4).data).children;
 
@@ -107,19 +106,18 @@ public class TreeHelper {
     }
 
     /**
-     * Возвращает список ComplexType с указанными именами.
+     * Returns ComplexType elements with specified names.
      */
-    public static List<XmlSchemaComplexType> getComplexTypesFromSchemaBySpecificNames(TreeNode<Object> oldSchemaTree,
-                                                                                      List<String> specificNames) {
-        List<XmlSchemaComplexType> filteredComplexType = new ArrayList<XmlSchemaComplexType>();
+    public static List<XmlSchemaComplexType> getComplexTypesFromSchemaBySpecificNames(TreeNode<Object> oldSchemaTree, List<String> specificNames) {
+        List<XmlSchemaComplexType> filteredComplexType = new ArrayList<>();
 
-        // достанем все ComplexType из дерева
+        // take all ComplexType children from tree
         List<TreeNode<Object>> complexTypes = ((TreeNode) oldSchemaTree.children.get(4).data).children;
 
         for (TreeNode<Object> complexType : complexTypes) {
             String typeName = ((XmlSchemaComplexType) (complexType.data)).getName();
 
-            // добавляем только нужные ComplexType
+            // add only necessary ComplexTypes
             if (typeName != null && specificNames.contains(typeName)) {
                 filteredComplexType.add((XmlSchemaComplexType) complexType.data);
             }
