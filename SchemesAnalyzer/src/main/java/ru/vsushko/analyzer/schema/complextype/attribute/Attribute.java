@@ -3,39 +3,40 @@ package ru.vsushko.analyzer.schema.complextype.attribute;
 import org.apache.ws.commons.schema.XmlSchemaAttribute;
 
 /**
+ * Get values from Attribute.
+ * <p>
  * Created by vsa
  * Date: 11.12.14.
  */
 public interface Attribute {
 
     /**
-     * Возвращает значение fixed атрибута.
+     * Returns fixed attribute value.
      */
     String getFixedValue(XmlSchemaAttribute schemaAttribute);
 
     /**
-     * Возращает имя атрибута.
+     * Returns attribute name.
      */
     String getName(XmlSchemaAttribute schemaAttribute);
 
     /**
-     * Возвращает тип атрибута без префикса.
+     * Returns attribute type without prefix.
      */
     String getType(XmlSchemaAttribute schemaAttribute);
 
     /**
-     * Возвращает префикс атрибута.
+     * Returns attribute prefix.
      */
     String getPrefix(XmlSchemaAttribute schemaAttribute);
 
     /**
-     * Возрвращает значение use атрибута
+     * Returns use attribute value.
      */
     String getRequiredValue(XmlSchemaAttribute schemaAttribute);
 
     /**
-     * Возвращает описание атрибута.
+     * Returns attribute description.
      */
     String getDescription(XmlSchemaAttribute schemaAttribute);
-
 }

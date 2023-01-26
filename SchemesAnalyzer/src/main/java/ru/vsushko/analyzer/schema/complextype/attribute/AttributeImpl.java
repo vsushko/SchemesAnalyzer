@@ -4,8 +4,8 @@ import org.apache.ws.commons.schema.XmlSchemaAttribute;
 import org.apache.ws.commons.schema.XmlSchemaDocumentation;
 
 /**
- * Возвращает значения атрибутов из Attribute.
- *
+ * Get values from Attribute.
+ * <p>
  * Created by vsa
  * Date: 11.12.14.
  */
