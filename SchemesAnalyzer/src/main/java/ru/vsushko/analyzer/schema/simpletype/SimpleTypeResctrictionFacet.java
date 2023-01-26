@@ -9,5 +9,6 @@ import java.util.List;
  * Date: 23.12.14.
  */
 public interface SimpleTypeResctrictionFacet<T> {
+
     List<String> getDifferenceBetweenConcreteFacet(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets, T value, String label);
 }

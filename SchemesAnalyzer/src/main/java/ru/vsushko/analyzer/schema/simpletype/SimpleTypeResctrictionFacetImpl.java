@@ -10,11 +10,11 @@ import java.util.List;
  * Created by vsa
  * Date: 23.12.14.
  */
-public class SimpleTypeResctrictionFacetImpl<T> implements SimpleTypeResctrictionFacet<T>{
+public class SimpleTypeResctrictionFacetImpl<T> implements SimpleTypeResctrictionFacet<T> {
 
     @Override
     public List<String> getDifferenceBetweenConcreteFacet(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets, T value, String label) {
-        List<String> diffs = new ArrayList<String>();
+        List<String> diffs = new ArrayList<>();
 
         T oldFacet = null;
         for (XmlSchemaFacet facet : oldFacets) {
@@ -30,29 +30,21 @@ public class SimpleTypeResctrictionFacetImpl<T> implements SimpleTypeResctrictio
             }
         }
 
-        // добавлено новое ограничение
+        // added new restriction
         if (oldFacet == null && newFacet != null) {
-//            diffs.add("Добавлено новое ограничение " + label + " со значением: " + newFacet.getValue());
+            // diffs.add("Added new restriction " + label + " with value: " + newFacet.getValue());
         }
 
-        // удалено старое органичение
+        // removed restriction which existed earlier
         if (newFacet == null && oldFacet != null) {
-//            diffs.add("Удалено ранее объявленное ограничение " + label + " со значением: " + oldFacet.getValue());
+            // diffs.add("Removed restriction which existed earlier " + label + " with value: " + oldFacet.getValue());
         }
 
-        // изменилось значение
-//        if (oldFacet != null && newFacet != null
-//                && !oldFacet.getValue().equals(newFacet.getValue())) {
-//            diffs.add("Изменено значение " + label + " с " + oldFacet.getValue() + " на " + newFacet.getValue());
-//        }
+        // changed value
+        /* if (oldFacet != null && newFacet != null
+                && !oldFacet.getValue().equals(newFacet.getValue())) {
+            diffs.add("Changed value " + label + " с " + oldFacet.getValue() + " на " + newFacet.getValue());
+        } */
         return diffs;
-        /*
-        XmlGenerator<Integer> intXmlGenerator = new XmlGeneratorImpl<Integer>(Integer.class);
-        XmlGenerator<String> stringXmlGenerator = new XmlGeneratorImpl<String>(String.class);
-
-        System.out.println("integer: " + intXmlGenerator.getXml(x));
-        System.out.println("string : " + stringXmlGenerator.getXml(y));
-        */
-
     }
 }

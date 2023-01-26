@@ -10,5 +10,6 @@ import java.util.List;
  * Date: 16.12.14.
  */
 public interface Restriction {
+
     List<XmlSchemaFacet> getSchemaFacets(XmlSchemaSimpleTypeRestriction restriction);
 }
