@@ -1,6 +1,6 @@
 package ru.vsushko.analyzer.schema.tree;
 
-import org.apache.ws.commons.schema.*;
+import org.apache.ws.commons.schema.XmlSchema;
 
 /**
  * Created by vsa
@@ -9,33 +9,32 @@ import org.apache.ws.commons.schema.*;
 public interface TreeBuilder {
 
     /**
-     * Строит дерево описания схемы.
+     * Creates schema description tree.
      */
     TreeNode<Object> createSchemaDescriptionTree(String schemaFullPath);
 
     /**
-     * Строит дерево элементов схемы.
+     * Creates schema elements tree.
      */
     TreeNode<Object> createSchemaElementsTree(XmlSchema xmlSchema);
 
     /**
-     * Строит дерево импортов схемы.
+     * Creates schema imports tree.
      */
     TreeNode<Object> createSchemaImportsTree(XmlSchema xmlSchema);
 
     /**
-     * Строит полное дерево всех SimpleType в схемы.
+     * Turns out SimpleType into tree.
      */
     TreeNode<Object> createSimpleTypeTree(XmlSchema xmlSchema);
 
     /**
-     * Строит полное дерево всех ComplexType схемы.
+     * Turns out ComplexType into tree.
      */
     TreeNode<Object> createComplexTypeTree(XmlSchema xmlSchema);
 
     /**
-     * Строит полное дерево схемы.
+     * Creates complete schema tree.
      */
     TreeNode<Object> buildSchemaTree(XmlSchema xmlSchema, String schemaPath);
-
 }
