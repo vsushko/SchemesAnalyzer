@@ -8,11 +8,8 @@ import java.io.File;
  */
 public class XsdAnalyzer {
 
-    // TODO: рефакторинг
-
     public File[] getSchemaFilesFromFolder(String pathToSchema) {
         File folderFile = new File(pathToSchema);
         return folderFile.listFiles();
     }
-
 }

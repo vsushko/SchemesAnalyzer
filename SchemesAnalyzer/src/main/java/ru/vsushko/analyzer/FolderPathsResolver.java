@@ -16,7 +16,7 @@ public class FolderPathsResolver {
     }
 
     private Object[] transformFullPath(String[] paths, String rootSchemaFolderPath) {
-        List<String> folders = new ArrayList<String>();
+        List<String> folders = new ArrayList<>();
         for (String path : paths) {
             StringBuilder builder = new StringBuilder();
             folders.add(String.valueOf(builder.append(rootSchemaFolderPath).append("\\").append(path).append("\\")));

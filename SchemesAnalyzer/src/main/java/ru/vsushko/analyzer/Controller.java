@@ -1,9 +1,12 @@
 package ru.vsushko.analyzer;
 
 import javafx.application.Platform;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import ru.vsushko.analyzer.schema.XsdAnalyzer;
@@ -56,48 +59,42 @@ public class Controller {
 
     @FXML
     public void openPreviousSchemasPathFileChooser() {
-        openOldSchemasButton.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                DirectoryChooser directoryChooser = new DirectoryChooser();
-                directoryChooser.setTitle("Указать папку с AF");
+        openOldSchemasButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Указать папку с AF");
 
-                File defaultDirectory = new File(".");
-                directoryChooser.setInitialDirectory(defaultDirectory);
+            File defaultDirectory = new File(".");
+            directoryChooser.setInitialDirectory(defaultDirectory);
 
-                File selectedDirectory = directoryChooser.showDialog(null);
+            File selectedDirectory = directoryChooser.showDialog(null);
 
-                if (selectedDirectory != null) {
-                    textFieldToOldSchemas.setText(selectedDirectory.getAbsolutePath());
-                    setOldTextFieldText(selectedDirectory.getAbsolutePath());
-                }
-                setPathToOldSchemas(getOldTextFieldText());
-                setOldTextFieldText(null);
+            if (selectedDirectory != null) {
+                textFieldToOldSchemas.setText(selectedDirectory.getAbsolutePath());
+                setOldTextFieldText(selectedDirectory.getAbsolutePath());
             }
+            setPathToOldSchemas(getOldTextFieldText());
+            setOldTextFieldText(null);
         });
     }
 
     @FXML
     public void openRecentSchemasPathFileChooser() {
-        openNewSchemasButton.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent mouseEvent) {
-                DirectoryChooser directoryChooser = new DirectoryChooser();
-                directoryChooser.setTitle("Указать папку с AF");
+        openNewSchemasButton.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Указать папку с AF");
 
-                File defaultDirectory = getPathToOldSchemas() != null && !getPathToOldSchemas().isEmpty() ?
-                        new File(getPathToOldSchemas()) : new File(".");
-                directoryChooser.setInitialDirectory(defaultDirectory);
+            File defaultDirectory = getPathToOldSchemas() != null && !getPathToOldSchemas().isEmpty() ?
+                    new File(getPathToOldSchemas()) : new File(".");
+            directoryChooser.setInitialDirectory(defaultDirectory);
 
-                File selectedDirectory = directoryChooser.showDialog(null);
+            File selectedDirectory = directoryChooser.showDialog(null);
 
-                if (selectedDirectory != null) {
-                    textFieldToNewSchemas.setText(selectedDirectory.getAbsolutePath());
-                    setNewTextFieldText(selectedDirectory.getAbsolutePath());
-                }
-                setPathToNewSchemas(getNewTextFieldText());
-                setNewTextFieldText(null);
+            if (selectedDirectory != null) {
+                textFieldToNewSchemas.setText(selectedDirectory.getAbsolutePath());
+                setNewTextFieldText(selectedDirectory.getAbsolutePath());
             }
+            setPathToNewSchemas(getNewTextFieldText());
+            setNewTextFieldText(null);
         });
     }
 
@@ -160,12 +157,12 @@ public class Controller {
         return pathToOldSchemas;
     }
 
-    public String getPathToNewSchemas() {
-        return pathToNewSchemas;
-    }
-
     public void setPathToOldSchemas(String pathToOldSchemas) {
         this.pathToOldSchemas = pathToOldSchemas;
+    }
+
+    public String getPathToNewSchemas() {
+        return pathToNewSchemas;
     }
 
     public void setPathToNewSchemas(String pathToNewSchemas) {

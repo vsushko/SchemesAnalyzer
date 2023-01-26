@@ -1,7 +1,6 @@
 package ru.vsushko.analyzer.schema;
 
-import org.apache.log4j.Logger;
-
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,8 +9,6 @@ import java.util.List;
  * Date: 21.12.14.
  */
 public class SchemaInfo {
-    private static Logger log = Logger.getLogger(SchemaInfo.class);
-
     private String schemaName;
     private String schemaDescription;
     private String schemaVersion;
@@ -29,16 +26,16 @@ public class SchemaInfo {
     }
 
     public List<String> getSchemaInfo() {
-        List<String> schemaInfo = new ArrayList<String>();
-        schemaInfo.add(encodeString("Наименование схемы: " + schemaName) + "\n");
-        schemaInfo.add(encodeString("Описание наименования XSD-схемы: " + schemaDescription + "\n"));
-        schemaInfo.add(encodeString("Версия схемы: " + schemaVersion + "\n"));
+        List<String> schemaInfo = new ArrayList<>();
+        schemaInfo.add(encodeString("Schema name: " + schemaName) + "\n");
+        schemaInfo.add(encodeString("XSD-schema description: " + schemaDescription + "\n"));
+        schemaInfo.add(encodeString("Version: " + schemaVersion + "\n"));
         return schemaInfo;
     }
 
     public String encodeString(String s) {
         try {
-            return new String(s.getBytes("UTF-8"), "ISO-8859-1");
+            return new String(s.getBytes(StandardCharsets.UTF_8), StandardCharsets.ISO_8859_1);
         } catch (Exception e) {
             e.printStackTrace();
         }

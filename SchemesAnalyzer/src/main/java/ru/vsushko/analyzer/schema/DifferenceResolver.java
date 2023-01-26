@@ -11,32 +11,32 @@ import java.util.List;
 public interface DifferenceResolver {
 
     /**
-     * Находит все изменения в схеме.
+     * All schemas checks.
      */
-    public void findAllDifference(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
+    void findAllDifference(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
 
     /**
-     * Проверка на изменения в описании схемы.
+     * Schema description difference check.
      */
-    public void checkDifferenceBetweenSchemaDescription(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
+    void checkDifferenceBetweenSchemaDescription(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
 
     /**
-     * Проверка на изменения в импортах.
+     * Schema imports changes check.
      */
-    public void checkDifferenceBetweenSchemaImports(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
+    void checkDifferenceBetweenSchemaImports(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
 
     /**
-     * Проверка на изменения в SimpleType элементах.
+     * Schema SimpleType elements changes check.
      */
-    public void checkDifferenceBetweenSimpleTypes(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
+    void checkDifferenceBetweenSimpleTypes(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
 
     /**
-     * Проверка на изменения в ComplexType элементах.
+     * Check for new ComplexType types existence.
      */
-    public void checkDifferenceBetweenComplexTypes(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
+    void checkDifferenceBetweenComplexTypes(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree);
 
     /**
-     * Возвращает список всех изменений.
+     * Returns list of changes which were identified during schemas difference comparison.
      */
     List<String> getDifferences();
 }

@@ -1,14 +1,43 @@
 package ru.vsushko.analyzer.schema;
 
 import com.sun.org.apache.xerces.internal.dom.DeferredTextImpl;
-import org.apache.ws.commons.schema.*;
+import org.apache.ws.commons.schema.XmlSchema;
+import org.apache.ws.commons.schema.XmlSchemaAttribute;
+import org.apache.ws.commons.schema.XmlSchemaAttributeOrGroupRef;
+import org.apache.ws.commons.schema.XmlSchemaChoice;
+import org.apache.ws.commons.schema.XmlSchemaChoiceMember;
+import org.apache.ws.commons.schema.XmlSchemaCollection;
+import org.apache.ws.commons.schema.XmlSchemaComplexContentExtension;
+import org.apache.ws.commons.schema.XmlSchemaComplexType;
+import org.apache.ws.commons.schema.XmlSchemaDocumentation;
+import org.apache.ws.commons.schema.XmlSchemaElement;
+import org.apache.ws.commons.schema.XmlSchemaEnumerationFacet;
+import org.apache.ws.commons.schema.XmlSchemaException;
+import org.apache.ws.commons.schema.XmlSchemaFacet;
+import org.apache.ws.commons.schema.XmlSchemaFractionDigitsFacet;
+import org.apache.ws.commons.schema.XmlSchemaImport;
+import org.apache.ws.commons.schema.XmlSchemaLengthFacet;
+import org.apache.ws.commons.schema.XmlSchemaMaxExclusiveFacet;
+import org.apache.ws.commons.schema.XmlSchemaMaxInclusiveFacet;
+import org.apache.ws.commons.schema.XmlSchemaMaxLengthFacet;
+import org.apache.ws.commons.schema.XmlSchemaMinExclusiveFacet;
+import org.apache.ws.commons.schema.XmlSchemaMinInclusiveFacet;
+import org.apache.ws.commons.schema.XmlSchemaMinLengthFacet;
+import org.apache.ws.commons.schema.XmlSchemaObject;
+import org.apache.ws.commons.schema.XmlSchemaPatternFacet;
+import org.apache.ws.commons.schema.XmlSchemaSequence;
+import org.apache.ws.commons.schema.XmlSchemaSequenceMember;
+import org.apache.ws.commons.schema.XmlSchemaSimpleType;
+import org.apache.ws.commons.schema.XmlSchemaSimpleTypeRestriction;
+import org.apache.ws.commons.schema.XmlSchemaTotalDigitsFacet;
+import org.apache.ws.commons.schema.XmlSchemaWhiteSpaceFacet;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
-import ru.vsushko.analyzer.schema.complextype.sequence.ElementImpl;
 import ru.vsushko.analyzer.schema.complextype.attribute.Attribute;
 import ru.vsushko.analyzer.schema.complextype.attribute.AttributeImpl;
 import ru.vsushko.analyzer.schema.complextype.sequence.Element;
+import ru.vsushko.analyzer.schema.complextype.sequence.ElementImpl;
 import ru.vsushko.analyzer.schema.tree.TreeHelper;
 import ru.vsushko.analyzer.schema.tree.TreeNode;
 
@@ -26,7 +55,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,7 +73,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает схему по указанному пути.
+     * Returns schema from specified path.
      */
     public static XmlSchema getSchemaFromPath(String schemaPath) {
         try {
@@ -54,29 +86,28 @@ public class SchemaHelper {
     }
 
     /**
-     * Выдергивает через XPath первое вхождение
-     * <xs:documentation><xs:annotation>Описание схемы</xs:annotation></xs:documentation>.
+     * Takes via XPath first occurrence
+     * <xs:documentation><xs:annotation>Schema description</xs:annotation></xs:documentation>.
      */
     public static String getSchemaDescription(String pathToSchema) {
         String schemaDescription;
         try {
-            FileInputStream file = new FileInputStream(new File(pathToSchema));
+            FileInputStream file = new FileInputStream(pathToSchema);
             DocumentBuilderFactory builderFactory = DocumentBuilderFactory.newInstance();
-            DocumentBuilder builder =  builderFactory.newDocumentBuilder();
+            DocumentBuilder builder = builderFactory.newDocumentBuilder();
             Document xmlDocument = builder.parse(file);
-            XPath xPath =  XPathFactory.newInstance().newXPath();
+            XPath xPath = XPathFactory.newInstance().newXPath();
 
             String expression = "//annotation/documentation";
             Node node = (Node) xPath.compile(expression).evaluate(xmlDocument, XPathConstants.NODE);
             schemaDescription = ((DeferredTextImpl) node.getFirstChild()).getData();
             return schemaDescription;
-
         } catch (ParserConfigurationException e) {
-            System.out.println("Не удалось создать фабрику");
+            System.out.println("Can't create parser ");
         } catch (XPathExpressionException e) {
-            System.out.println("Не удалось распознать XPath выражение");
+            System.out.println("Can't read XPath expression");
         } catch (FileNotFoundException e) {
-            System.out.println("Не удалось найти файл " + pathToSchema);
+            System.out.println("Cannot find file " + pathToSchema);
         } catch (SAXException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -86,7 +117,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает версию схемы.
+     * Returns schema version.
      */
     public static String readSchemaVersionInfo(String schemaTargetNamespace) {
         Pattern pattern = Pattern.compile("\\d.{2,}");
@@ -95,13 +126,13 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список ComplexType.
+     * Returns ComplexTypes list.
      */
     public static List<String> getComplexTypeListFromSchema(XmlSchema xmlSchema) {
-        List<String> complexTypeNames = new ArrayList<String>();
+        List<String> complexTypeNames = new ArrayList<>();
 
-        // Положим в список имена всех ComplexType
-        for (QName type : new ArrayList<QName>(xmlSchema.getSchemaTypes().keySet())) {
+        // put into list all ComplexType names
+        for (QName type : new ArrayList<>(xmlSchema.getSchemaTypes().keySet())) {
             if (xmlSchema.getSchemaTypes().get(type) instanceof XmlSchemaComplexType) {
                 complexTypeNames.add(type.getLocalPart());
             }
@@ -110,13 +141,13 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список SimpleType.
+     * Returns SimpleType list.
      */
     public static List<String> getSimpleTypeListFromSchema(XmlSchema xmlSchema) {
-        List<String> simpleTypeNames = new ArrayList<String>();
+        List<String> simpleTypeNames = new ArrayList<>();
 
-        // Положим в список имена всех SimpleType
-        for (QName type : new ArrayList<QName>(xmlSchema.getSchemaTypes().keySet())) {
+        // put into list all SimpleType names
+        for (QName type : new ArrayList<>(xmlSchema.getSchemaTypes().keySet())) {
             if (xmlSchema.getSchemaTypes().get(type) instanceof XmlSchemaSimpleType) {
                 simpleTypeNames.add(type.getLocalPart());
             }
@@ -125,11 +156,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет новые ComplexType.
+     * Returns new ComplexType list.
      */
     public static List<String> getNewComplexTypes(List<String> actualTypeNames, List<String> typeNamesToCompare) {
-        List<String> newComplexTypeNames = new ArrayList<String>();
-        newComplexTypeNames.addAll(typeNamesToCompare);
+        List<String> newComplexTypeNames = new ArrayList<>(typeNamesToCompare);
 
         for (String typeName : actualTypeNames) {
             newComplexTypeNames.remove(typeName);
@@ -138,11 +168,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список всех ComplexType существовавших ранее.
+     * Returns all ComplexType list which were exited earlier.
      */
     public static List<String> getPreExistingComplexTypes(List<String> actualTypeNames, List<String> typeNamesToCompare) {
-        List<String> preExistingTypeNames = new ArrayList<String>();
-        preExistingTypeNames.addAll(actualTypeNames);
+        List<String> preExistingTypeNames = new ArrayList<>(actualTypeNames);
 
         for (String typeName : typeNamesToCompare) {
             preExistingTypeNames.remove(typeName);
@@ -151,11 +180,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет новые SimpleType.
+     * Returns new SimpleType list.
      */
     public static List<String> getNewSimpleTypes(List<String> actualTypeNames, List<String> typeNamesToCompare) {
-        List<String> newSimpleTypeNames = new ArrayList<String>();
-        newSimpleTypeNames.addAll(typeNamesToCompare);
+        List<String> newSimpleTypeNames = new ArrayList<>(typeNamesToCompare);
 
         for (String typeName : actualTypeNames) {
             newSimpleTypeNames.remove(typeName);
@@ -164,11 +192,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список всех SimpleType существовавших ранее.
+     * Returns all SimpleType list which were exited earlier.
      */
     public static List<String> getPreExistingSimpleTypes(List<String> actualTypeNames, List<String> typeNamesToCompare) {
-        List<String> preExistingElements = new ArrayList<String>();
-        preExistingElements.addAll(actualTypeNames);
+        List<String> preExistingElements = new ArrayList<>(actualTypeNames);
 
         for (String typeName : typeNamesToCompare) {
             preExistingElements.remove(typeName);
@@ -177,15 +204,14 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает изменения между ComplexType элементами.
+     * Returns difference between ComplexType elements.
      */
-    public static List<String> getDifferenceBetweenComplexTypes(List<XmlSchemaComplexType> oldComplexTypes,
-                                                                List<XmlSchemaComplexType> newComplexTypes) {
-        List<String> differences = new ArrayList<String>();
+    public static List<String> getDifferenceBetweenComplexTypes(List<XmlSchemaComplexType> oldComplexTypes, List<XmlSchemaComplexType> newComplexTypes) {
+        List<String> differences = new ArrayList<>();
 
         if (oldComplexTypes.size() != newComplexTypes.size()) {
             try {
-                throw new Exception("Списки для сравнения элементов у комплексных типов не совпадают по длине");
+                throw new Exception("Complex type lists have the length difference...");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -194,26 +220,22 @@ public class SchemaHelper {
         for (int idx = 0; idx < oldComplexTypes.size() && idx < newComplexTypes.size(); idx++) {
             String complexTypeName = newComplexTypes.get(idx).getName();
 
-            // сравним аннотации
+            // check ComplexTypeAnnotation
             String oldAnnotationDescription = SchemaHelper.getComplexTypeAnnotation(oldComplexTypes.get(idx));
             String newAnnotationDescription = SchemaHelper.getComplexTypeAnnotation(newComplexTypes.get(idx));
 
-            // аннотаций может не быть
-            if (oldAnnotationDescription != null && newAnnotationDescription != null
-                    && !oldAnnotationDescription.equals(newAnnotationDescription)){
-                differences.add("\n" + newComplexTypes.get(idx).getName() + " изменено описание: " + newAnnotationDescription + "\n");
+            // case without ComplexTypeAnnotations
+            if (oldAnnotationDescription != null && newAnnotationDescription != null && !oldAnnotationDescription.equals(newAnnotationDescription)) {
+                differences.add("\n" + newComplexTypes.get(idx).getName() + " changed description: " + newAnnotationDescription + "\n");
             }
 
-            // случай, когда нужно брать данные из ComplexContent (глобальные прикладные типы)
-            if (newComplexTypes.get(idx).getContentModel() != null && oldComplexTypes.get(idx).getContentModel() != null
-                    && newComplexTypes.get(idx).getParticle() == null && oldComplexTypes.get(idx).getParticle() == null) {
+            // case when data from ComplexContent should be taken (global types)
+            if (newComplexTypes.get(idx).getContentModel() != null && oldComplexTypes.get(idx).getContentModel() != null && newComplexTypes.get(idx).getParticle() == null && oldComplexTypes.get(idx).getParticle() == null) {
 
-                XmlSchemaComplexContentExtension oldExtension =
-                        (XmlSchemaComplexContentExtension) oldComplexTypes.get(idx).getContentModel().getContent();
-                XmlSchemaComplexContentExtension newExtension =
-                        (XmlSchemaComplexContentExtension) newComplexTypes.get(idx).getContentModel().getContent();
+                XmlSchemaComplexContentExtension oldExtension = (XmlSchemaComplexContentExtension) oldComplexTypes.get(idx).getContentModel().getContent();
+                XmlSchemaComplexContentExtension newExtension = (XmlSchemaComplexContentExtension) newComplexTypes.get(idx).getContentModel().getContent();
 
-                // сравниваем элементы последовательности
+                // checking SequencesElements
                 List<String> sequenceChanges = SchemaHelper.getDifferenceBetweenExtensionSequencesElements(oldExtension, newExtension);
 
                 if (sequenceChanges.size() != 0) {
@@ -239,14 +261,13 @@ public class SchemaHelper {
                     }
                 }
             }
-            // случай, когда нужно брать данные из Particle (локальные прикладные типы)
-            if (newComplexTypes.get(idx).getParticle() != null && oldComplexTypes.get(idx).getParticle() != null
-                    && newComplexTypes.get(idx).getContentModel() == null && oldComplexTypes.get(idx).getContentModel() == null) {
+            // case when data from Particle should be taken (local types )
+            if (newComplexTypes.get(idx).getParticle() != null && oldComplexTypes.get(idx).getParticle() != null && newComplexTypes.get(idx).getContentModel() == null && oldComplexTypes.get(idx).getContentModel() == null) {
 
                 XmlSchemaSequence oldExtension = (XmlSchemaSequence) oldComplexTypes.get(idx).getParticle();
                 XmlSchemaSequence newExtension = (XmlSchemaSequence) newComplexTypes.get(idx).getParticle();
 
-                // сравниваем элементы последовательности
+                // compare SequencesElements
                 List<String> sequenceChanges = SchemaHelper.getDifferenceBetweenExtensionSequencesElements(oldExtension.getItems(), newExtension.getItems());
 
                 if (sequenceChanges.size() != 0) {
@@ -258,7 +279,7 @@ public class SchemaHelper {
                     }
                 }
 
-                List<XmlSchemaAttributeOrGroupRef> oldAttributes =  oldComplexTypes.get(idx).getAttributes();
+                List<XmlSchemaAttributeOrGroupRef> oldAttributes = oldComplexTypes.get(idx).getAttributes();
                 List<XmlSchemaAttributeOrGroupRef> newAttributes = newComplexTypes.get(idx).getAttributes();
 
                 List<String> attributeChanges = SchemaHelper.getDifferenceBetweenExtensionAttributesValues(oldAttributes, newAttributes);
@@ -277,38 +298,37 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает изменения в среди Elements и Choice в XmlSchemaComplexContentExtension.
+     * Returns changes between Elements and Choice in XmlSchemaComplexContentExtension.
      */
-    private static List<String> getDifferenceBetweenExtensionSequencesElements(XmlSchemaComplexContentExtension oldExtension,
-                                                                               XmlSchemaComplexContentExtension newExtension) {
-        List<String> difference = new ArrayList<String>();
+    private static List<String> getDifferenceBetweenExtensionSequencesElements(XmlSchemaComplexContentExtension oldExtension, XmlSchemaComplexContentExtension newExtension) {
+        List<String> difference = new ArrayList<>();
 
         List<XmlSchemaElement> oldElements = SchemaHelper.getSequenceElements(oldExtension);
         List<XmlSchemaElement> newElements = SchemaHelper.getSequenceElements(newExtension);
 
-        // extension может и не быть, элементов тоже
+        // possible existence of extension and elements
         if (oldElements != null && newElements != null) {
-            // добавлены новые XmlSchemaElement элементы
+            // added new XmlSchemaElement elements
             difference.addAll(SchemaHelper.getNewElementsInComplexTypeSequenceElements(oldElements, newElements));
-            // удалены ранее объявленные XmlSchemaElement элементы
+            // removed XmlSchemaElement elementss
             difference.addAll(SchemaHelper.getRemovedElementsInComplexTypeSequenceElements(oldElements, newElements));
 
-            // получим список имен элементов старой схемы
+            // get list with ElementsNames from old schema
             List<String> oldElementsNames = SchemaHelper.getElementsNames(oldElements);
 
-            // получим список имен элементов новой схемы
+            // get list with ElementsNames from new schema
             List<String> newElementsNames = SchemaHelper.getElementsNames(newElements);
 
-            // получим список XmlSchemaElement элементов с одинаковыми именами
+            // get list XmlSchemaElement with same names
             List<String> sameSchemaElementsNames = SchemaHelper.getSameTypeNames(oldElementsNames, newElementsNames);
 
             List<XmlSchemaElement> oldSameElements = SchemaHelper.getElementsFromComplexTypeBySpecificNames(oldElements, sameSchemaElementsNames);
             List<XmlSchemaElement> newSameElements = SchemaHelper.getElementsFromComplexTypeBySpecificNames(newElements, sameSchemaElementsNames);
 
-            // получим список изменений между параметрами у элементов
+            // fill DifferenceBetweenExtensionSequencesElementsValues list between extensions
             difference.addAll(SchemaHelper.getDifferenceBetweenExtensionSequencesElementsValues(oldSameElements, newSameElements));
 
-            // если есть choice, их тоже анализируем
+            // if there is choice elements - analyze them
             List<XmlSchemaChoice> oldChoices = SchemaHelper.getSequenceChoices(oldExtension);
             List<XmlSchemaChoice> newChoices = SchemaHelper.getSequenceChoices(newExtension);
 
@@ -316,60 +336,59 @@ public class SchemaHelper {
                 difference.addAll(SchemaHelper.getDifferenceBetweenChoices(oldChoices, newChoices));
             }
 
-            // удален ранее объявленный XmlSchemaChoice
+            // removed XmlSchemaChoice element
             if (oldChoices.size() != 0 && newChoices.size() == 0) {
-                // достать описание
-                difference.add("удален ранее объявленный choice элемент");
+                // get description
+                difference.add("removed choice element");
             }
 
-            // добавлен новый XmlSchemaChoice
+            // added new XmlSchemaChoice
             if (oldChoices.size() == 0 && newChoices.size() != 0) {
-                // достать описание
-                difference.add("добавлен новый choice элемент");
+                // get description
+                difference.add("added new choice element");
             }
         }
         return difference;
     }
 
     private static List<String> getDifferenceBetweenChoices(List<XmlSchemaChoice> oldChoices, List<XmlSchemaChoice> newChoices) {
-        List<String> difference = new ArrayList<String>();
+        List<String> difference = new ArrayList<>();
 
         String newDescription;
-        // добавлено описание
+        // added description
         if (oldChoices.size() == 0 && newChoices.size() == 1) {
             for (XmlSchemaChoice choice : newChoices) {
                 newDescription = SchemaHelper.getChoiceAnnotation(choice);
                 if (newDescription != null) {
-                    difference.add("у choice элемента добавлено новое описание " + newDescription);
+                    difference.add("in choice element added new description " + newDescription);
                 }
             }
         }
         String oldDescription;
-        // удалено описание
+        // removed description
         if (oldChoices.size() == 1 && newChoices.size() == 0) {
             for (XmlSchemaChoice choice : oldChoices) {
-                 oldDescription = SchemaHelper.getChoiceAnnotation(choice);
+                oldDescription = SchemaHelper.getChoiceAnnotation(choice);
                 if (oldDescription != null) {
-                    difference.add("у choice элемента удалено ранее объявленное описание " + oldDescription);
+                    difference.add("in choice element removed description " + oldDescription);
                 }
             }
         }
-        // если choice элементы присутствуют в обеих схемах, то сравниваем элементы
+        // if there are choice element then compare them
         if (oldChoices.size() == 1 && newChoices.size() == 1) {
-            // сравним описания
+            // compare descriptions
             newDescription = SchemaHelper.getChoiceAnnotation(newChoices.get(0));
             oldDescription = SchemaHelper.getChoiceAnnotation(oldChoices.get(0));
 
-            if (newDescription != null && oldDescription != null &&
-                    !oldDescription.equals(newDescription)) {
-                difference.add("у choice элемента изменено описание : \n" + newDescription);
+            if (newDescription != null && oldDescription != null && !oldDescription.equals(newDescription)) {
+                difference.add("Choice description element was changed : \n" + newDescription);
             }
 
             // id=ID
             String oldId = oldChoices.get(0).getId();
             String newId = newChoices.get(0).getId();
             if (oldId != null && newId != null && !oldId.equals(newId)) {
-                difference.add("у choice элемента изменилось значение атрибута 'id ' c " + oldId + " на " + newId);
+                difference.add("Choice 'id' element value was changed from " + oldId + " to " + newId);
             }
 
             // TODO: fix choice difference output
@@ -378,31 +397,31 @@ public class SchemaHelper {
             String oldMaxOccurs = String.valueOf(oldChoices.get(0).getMaxOccurs());
             String newMaxOccurs = String.valueOf(newChoices.get(0).getMaxOccurs());
             if (!oldMaxOccurs.equals(newMaxOccurs)) {
-                difference.add("у choice элемента изменилось значение атрибута 'maxOccurs ' c " + oldMaxOccurs + " на " + newMaxOccurs);
+                difference.add("Choice 'maxOccurs' element value changed from  " + oldMaxOccurs + " to " + newMaxOccurs);
             }
 
             // minOccurs=nonNegativeInteger
             String oldMinOccurs = String.valueOf(oldChoices.get(0).getMinOccurs());
             String newMinOccurs = String.valueOf(newChoices.get(0).getMinOccurs());
             if (!oldMinOccurs.equals(newMinOccurs)) {
-                difference.add("у choice элемента изменилось значение атрибута 'minOccurs ' c " + oldMinOccurs + " на " + newMinOccurs);
+                difference.add("Choice 'minOccurs' element value changed from " + oldMinOccurs + " to " + newMinOccurs);
             }
 
             List<XmlSchemaElement> oldChoiceElements = SchemaHelper.getChoicesElements(oldChoices);
             List<XmlSchemaElement> newChoiceElements = SchemaHelper.getChoicesElements(newChoices);
 
-            // добавлены новые XmlSchemaElement элементы
+            // added new XmlSchemaElement elements
             difference.addAll(SchemaHelper.getNewElementsInComplexTypeSequenceElements(oldChoiceElements, newChoiceElements));
-            // удалены ранее объявленные XmlSchemaElement элементы
+            // removed old XmlSchemaElement elements
             difference.addAll(SchemaHelper.getRemovedElementsInComplexTypeSequenceElements(oldChoiceElements, newChoiceElements));
 
-            // получим список имен элементов старых choice
+            // get old choice elements names
             List<String> oldElementsNames = SchemaHelper.getElementsNames(oldChoiceElements);
 
-            // получим список имен элементов новый choice
+            // get new choice elements names
             List<String> newElementsNames = SchemaHelper.getElementsNames(newChoiceElements);
 
-            // получим список XmlSchemaChoice элементов с одинаковыми именами
+            // get XmlSchemaChoice list with the same names
             List<String> sameSchemaElementsNames = SchemaHelper.getSameTypeNames(oldElementsNames, newElementsNames);
 
             List<XmlSchemaElement> oldSameElements = SchemaHelper.getElementsFromComplexTypeBySpecificNames(oldChoiceElements, sameSchemaElementsNames);
@@ -414,16 +433,16 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список элементов из Choice.
+     * Returns list of Choice elements.
      */
     private static List<XmlSchemaElement> getChoicesElements(List<XmlSchemaChoice> choices) {
-        List<XmlSchemaElement> elements = new ArrayList<XmlSchemaElement>();
+        List<XmlSchemaElement> elements = new ArrayList<>();
 
-        // работаем только с первыми choice элементами
+        // work only with firsts choice elements occurrence
         if (choices.size() == 1) {
             for (XmlSchemaChoice choice : choices) {
                 for (XmlSchemaChoiceMember member : choice.getItems()) {
-                    // и только с XmlSchemaElements внутри, можно реализовать с sequence
+                    // and only with XmlSchemaElements inside, it could be possible to make an implementation with sequence
                     // (annotation?,(element|group|choice|sequence|any)*)
                     if (member instanceof XmlSchemaElement) {
                         elements.add((XmlSchemaElement) member);
@@ -435,29 +454,28 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает изменения между ComplexType элементами, работает с XmlSchemaSequenceMember.
+     * Returns changes between ComplexType elements, works with XmlSchemaSequenceMember.
      */
-    private static List<String> getDifferenceBetweenExtensionSequencesElements(List<XmlSchemaSequenceMember> oldMemberList,
-                                                                               List<XmlSchemaSequenceMember> newMemberList) {
-        List<String> difference = new ArrayList<String>();
+    private static List<String> getDifferenceBetweenExtensionSequencesElements(List<XmlSchemaSequenceMember> oldMemberList, List<XmlSchemaSequenceMember> newMemberList) {
+        List<String> difference = new ArrayList<>();
 
         List<XmlSchemaElement> oldElements = SchemaHelper.getSequenceElements(oldMemberList);
         List<XmlSchemaElement> newElements = SchemaHelper.getSequenceElements(newMemberList);
 
-        // extension может и не быть, элементов тоже
+        // extensions couldn't be elements too
         if (oldElements != null && newElements != null) {
-            // добавлены новые XmlSchemaElement элементы
+            // added new XmlSchemaElement elements
             difference.addAll(SchemaHelper.getNewElementsInComplexTypeSequenceElements(oldElements, newElements));
-            // удалены ранее объявленные XmlSchemaElement элементы
+            // removed old XmlSchemaElement elements
             difference.addAll(SchemaHelper.getRemovedElementsInComplexTypeSequenceElements(oldElements, newElements));
 
-            // получим список имен элементов старой схемы
+            // get list with old schema elements
             List<String> oldElementsNames = SchemaHelper.getElementsNames(oldElements);
 
-            // получим список имен элементов новой схемы
+            // get list with new schema elements
             List<String> newElementsNames = SchemaHelper.getElementsNames(newElements);
 
-            // получим список XmlSchemaElement элементов с одинаковыми именами
+            // get XmlSchemaElement list with the same names
             List<String> sameSchemaElementsNames = SchemaHelper.getSameTypeNames(oldElementsNames, newElementsNames);
 
             List<XmlSchemaElement> oldSameElements = SchemaHelper.getElementsFromComplexTypeBySpecificNames(oldElements, sameSchemaElementsNames);
@@ -465,7 +483,7 @@ public class SchemaHelper {
 
             difference.addAll(SchemaHelper.getDifferenceBetweenExtensionSequencesElementsValues(oldSameElements, newSameElements));
 
-            // если есть choice, их тоже анализируем
+            // if there ara choice, analyze them
             List<XmlSchemaChoice> oldChoices = SchemaHelper.getSequenceChoices(oldMemberList);
             List<XmlSchemaChoice> newChoices = SchemaHelper.getSequenceChoices(newMemberList);
 
@@ -473,24 +491,23 @@ public class SchemaHelper {
                 difference.addAll(SchemaHelper.getDifferenceBetweenChoices(oldChoices, newChoices));
             }
 
-            // удален ранее объявленный XmlSchemaChoice
+            // removed old XmlSchemaChoice
             if (oldChoices.size() != 0 && newChoices.size() == 0) {
-                // достать описание
-                difference.add("удален ранее объявленный choice элемент");
+                // get description
+                difference.add("Choice element was deleted");
             }
 
-            // добавлен новый XmlSchemaChoice
+            // added new XmlSchemaChoice
             if (oldChoices.size() == 0 && newChoices.size() != 0) {
-                // достать описание
-                difference.add("добавлен новый choice элемент");
+                // get description
+                difference.add("Choice new element was added");
             }
         }
-
         return difference;
     }
 
     /**
-     * Возвращает XmlSchemaElement по заданному имени из коллекции.
+     * Returns XmlSchemaElement with specified name.
      */
     public static XmlSchemaElement getXmlSchemaElementWithSameName(List<XmlSchemaElement> elements, String name) {
         Element elementHelper = new ElementImpl();
@@ -503,100 +520,89 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает изменения между элементами.
+     * Returns the difference between extension sequences elements values.
      */
     private static List<String> getDifferenceBetweenExtensionSequencesElementsValues(List<XmlSchemaElement> oldSameElements, List<XmlSchemaElement> newSameElements) {
-        List<String> diffStrings = new ArrayList<String>();
+        List<String> diffStrings = new ArrayList<>();
 
         Element element = new ElementImpl();
 
         if (oldSameElements.size() == newSameElements.size()) {
             for (XmlSchemaElement newSameElement : newSameElements) {
-                // получим из старой схемы элемент с таким же именем
+                // get element from old schema with that same name
                 XmlSchemaElement oldSameElement = getXmlSchemaElementWithSameName(oldSameElements, element.getName(newSameElement));
 
-                // сравниваем атрибуты элементов
+                // compare elements attributes
                 if (newSameElement != null && oldSameElement != null) {
 
-                    // Type
+                    // type
                     if (!element.getType(oldSameElement).equals(element.getType(newSameElement))) {
-                        diffStrings.add("Для элемента " + element.getName(newSameElement) + " изменен тип на " + element.getType(newSameElement));
+                        diffStrings.add("For element " + element.getName(newSameElement) + " type was changed to " + element.getType(newSameElement));
                     }
 
                     /*if (!element.getPrefix(oldSameElement).equals(element.getPrefix(newSameElement))) {
-                        diffStrings.add("изменилось значение атрибута 'prefix' с " + element.getPrefix(oldSameElement) + " на " + element.getPrefix(newSameElement));
+                        diffStrings.add("'prefix' attribute value was changed from " + element.getPrefix(oldSameElement) + " to " + element.getPrefix(newSameElement));
                     }*/
 
                     // TODO: work with unbounded value
-                    // Если изменено значение атрибутов minOccurs и maxOccurs одновременно
-                    if (!element.getMinOccurs(oldSameElement).equals(element.getMinOccurs(newSameElement))
-                            && !element.getMaxOccurs(oldSameElement).equals(element.getMaxOccurs(newSameElement))) {
-                        // Если m=M, то выводим только [M]
+                    // case when minOccurs and maxOccurs was changed at the same time
+                    if (!element.getMinOccurs(oldSameElement).equals(element.getMinOccurs(newSameElement)) && !element.getMaxOccurs(oldSameElement).equals(element.getMaxOccurs(newSameElement))) {
+                        // if m=M, then print only [M]
                         if (element.getMinOccurs(newSameElement).equals(element.getMaxOccurs(newSameElement))) {
-                            diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                    " изменена множественность [" + element.getMaxOccurs(newSameElement) + "]");
+                            diffStrings.add("For element " + element.getName(newSameElement) + " multiplicity changed [" + element.getMaxOccurs(newSameElement) + "]");
                         } else {
-                            diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                    " изменена множественность [" + element.getMinOccurs(newSameElement) + ".." + element.getMaxOccurs(newSameElement) + "]");
+                            diffStrings.add("For element " + element.getName(newSameElement) + " multiplicity changed [" + element.getMinOccurs(newSameElement) + ".." + element.getMaxOccurs(newSameElement) + "]");
                         }
                     } else {
-                        // раньше MinOccurs было 1, а теперь другое значение
+                        // preceding MinOccurs value was 1, now - it is another value
                         if (element.getMinOccurs(oldSameElement).equals("1") && !element.getMinOccurs(oldSameElement).equals(element.getMinOccurs(newSameElement))) {
-                            // Если m=M=1, то [1]
+                            // if m=M=1, then [1]
                             if (element.getMinOccurs(newSameElement).equals("1") && element.getMaxOccurs(newSameElement).equals("1")) {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена обязательность [1]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " changed mandatory [1]");
                             } else {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена обязательность [m.." + element.getMaxOccurs(newSameElement) + "]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " changed mandatory [m.." + element.getMaxOccurs(newSameElement) + "]");
                             }
                         }
 
-                        // раньше MaxOccurs было 1, а теперь другое значение
+                        // preceding MaxOccurs value was  1, now - it is another value
                         if (element.getMaxOccurs(oldSameElement).equals("1") && !element.getMaxOccurs(oldSameElement).equals(element.getMaxOccurs(newSameElement))) {
-                            // Если m=M=1, то [1]
+                            // if m=M=1, then [1]
                             if (element.getMinOccurs(newSameElement).equals("1") && element.getMaxOccurs(newSameElement).equals("1")) {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена множественность [1]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " multiplicity changed [1]");
                             } else {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена множественность [" + element.getMinOccurs(newSameElement) + "..M]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " multiplicity changed [" + element.getMinOccurs(newSameElement) + "..M]");
                             }
                         }
 
-                        // раньше MinOccurs был объявлен, а теперь 1
+                        // preceding MinOccurs was declared, now - it is value 1
                         if (element.getMinOccurs(newSameElement).equals("1") && !element.getMinOccurs(oldSameElement).equals(element.getMinOccurs(newSameElement))) {
-                            // Если M=1, то [1]
+                            // if M=1, then [1]
                             if (element.getMaxOccurs(newSameElement).equals("1")) {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена обязательность [1]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " changed mandatory [1]");
                             } else {
-                                // MaxOccurs может быть "0"
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена обязательность [1.." + element.getMaxOccurs(newSameElement) + "]");
+                                // MaxOccurs could have value "0"
+                                diffStrings.add("For element " + element.getName(newSameElement) + " changed mandatory [1.." + element.getMaxOccurs(newSameElement) + "]");
                             }
                         }
 
-                        // раньше MaxOccurs был объявлен, а теперь 1
+                        // preceding MaxOccurs was declared, now - it is value 1
                         if (element.getMaxOccurs(newSameElement).equals("1") && !element.getMaxOccurs(oldSameElement).equals(element.getMaxOccurs(newSameElement))) {
-                            // если m=1, то [1]
+                            // if m=1, then [1]
                             if (element.getMinOccurs(newSameElement).equals("1")) {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена множественность [1]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " multiplicity changed [1]");
                             } else {
-                                diffStrings.add("Для элемента " + element.getName(newSameElement) +
-                                        " изменена множественность [" + element.getMinOccurs(newSameElement) + "..1]");
+                                diffStrings.add("For element " + element.getName(newSameElement) + " multiplicity changed [" + element.getMinOccurs(newSameElement) + "..1]");
                             }
                         }
                     }
 
                     // %-)
 
-                    // описание элемента может отсутствовать
+                    // description of element could not declared
                     String oldDescription = element.getDescription(oldSameElement);
                     String newDescription = element.getDescription(newSameElement);
                     if (oldDescription != null && newDescription != null && !oldDescription.equals(element.getDescription(newSameElement))) {
-                        diffStrings.add(" Для элемента " + element.getName(newSameElement) + " изменено описание: " + element.getDescription(newSameElement));
+                        diffStrings.add(" For element " + element.getName(newSameElement) + " changed description: " + element.getDescription(newSameElement));
                     }
                 }
             }
@@ -605,7 +611,7 @@ public class SchemaHelper {
     }
 
     private static List<String> getElementsNames(List<XmlSchemaElement> elements) {
-        List<String> elementsNames = new ArrayList<String>();
+        List<String> elementsNames = new ArrayList<>();
 
         for (XmlSchemaElement element : elements) {
             elementsNames.add(element.getName());
@@ -614,19 +620,18 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает изменения между атрибутами в XmlSchemaComplexContentExtension.
+     * Returns changes between atributess in XmlSchemaComplexContentExtension.
      */
-    private static List<String> getDifferenceBetweenExtensionAttributesValues(List<XmlSchemaAttributeOrGroupRef> oldAttributes,
-                                                                              List<XmlSchemaAttributeOrGroupRef> newAttributes) {
-        List<String> diffStrings = new ArrayList<String>();
+    private static List<String> getDifferenceBetweenExtensionAttributesValues(List<XmlSchemaAttributeOrGroupRef> oldAttributes, List<XmlSchemaAttributeOrGroupRef> newAttributes) {
+        List<String> diffStrings = new ArrayList<>();
 
-        // TODO: рефакторинг сравнений на null
+        // TODO: comparison with null values should be refactored
 
-        // если размер коллекций элементов совпадает
+        // if size of collection are equal
         if (oldAttributes.size() == newAttributes.size()) {
             for (int idx = 0; idx < oldAttributes.size() && idx < newAttributes.size(); idx++) {
 
-                // сравниваем атрибуты
+                // compare attributes
                 Attribute attribute = new AttributeImpl();
 
                 XmlSchemaAttribute oldAttribute = (XmlSchemaAttribute) oldAttributes.get(idx);
@@ -638,47 +643,42 @@ public class SchemaHelper {
                     String newFixedValue = attribute.getFixedValue(newAttribute);
 
                     if (oldFixedValue != null && newFixedValue != null && !oldFixedValue.equals(newFixedValue)) {
-                        diffStrings.add("изменилось значение 'fixed' у атрибута " + attribute.getName(newAttribute)
-                                + " с " + oldFixedValue +  " на " + newFixedValue);
+                        diffStrings.add("'fixed' value was changed in attribute " + attribute.getName(newAttribute) + " from " + oldFixedValue + " to " + newFixedValue);
                     }
 
                     String oldName = attribute.getName(oldAttribute);
                     String newName = attribute.getName(newAttribute);
 
                     if (oldName != null && newName != null && !oldName.equals(newName)) {
-                        diffStrings.add("изменилось значение 'имя' у атрибута c" + oldName + " на " + newName);
+                        diffStrings.add("'name' value was changed in attribute from" + oldName + " to " + newName);
                     }
 
                     String oldPrefix = attribute.getPrefix(oldAttribute);
                     String newPrefix = attribute.getPrefix(newAttribute);
 
                     if (oldPrefix != null && newPrefix != null && !oldPrefix.equals(newPrefix)) {
-                        diffStrings.add("изменилось значение 'префикс' у атрибута " + newName
-                                + " c " + oldPrefix + " на " + newPrefix);
+                        diffStrings.add("'prefix' value was changed in attribute " + newName + " from " + oldPrefix + " to " + newPrefix);
                     }
 
                     String oldType = attribute.getType(oldAttribute);
                     String newType = attribute.getType(newAttribute);
 
                     if (oldType != null && newType != null && !oldType.equals(newType)) {
-                        diffStrings.add("изменилось значение 'тип' у атрибута " + attribute.getName(newAttribute)
-                                + " c " + oldType + " на " + newType);
+                        diffStrings.add("'type' value was changed in attribute " + attribute.getName(newAttribute) + " from " + oldType + " to " + newType);
                     }
 
                     String oldRequiredValue = attribute.getRequiredValue(oldAttribute);
                     String newRequiredValue = attribute.getRequiredValue(newAttribute);
 
                     if (!oldRequiredValue.equals(newRequiredValue)) {
-                        diffStrings.add("изменилось значение 'use' у атрибута " + attribute.getName(newAttribute)
-                                + " c " + oldRequiredValue + " на " + newRequiredValue);
+                        diffStrings.add("'use' value was changed in attribute " + attribute.getName(newAttribute) + " from " + oldRequiredValue + " to " + newRequiredValue);
                     }
 
                     String oldDescription = attribute.getDescription(oldAttribute);
                     String newDescription = attribute.getDescription(newAttribute);
 
                     if (oldDescription != null && newDescription != null && !oldDescription.equals(newDescription)) {
-                        diffStrings.add("изменилось значение 'описание' у атрибута " + attribute.getName(newAttribute)
-                                + ": " + attribute.getDescription(newAttribute));
+                        diffStrings.add("'description' value was changed in attribute " + attribute.getName(newAttribute) + ": " + attribute.getDescription(newAttribute));
                     }
                 }
             }
@@ -687,10 +687,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список ComplexType.
+     * Returns ComplexTypes list.
      */
     public static List<XmlSchemaComplexType> getComplexTypeItems(XmlSchema xmlSchema) {
-        List<XmlSchemaComplexType> schemaComplexTypes = new ArrayList<XmlSchemaComplexType>();
+        List<XmlSchemaComplexType> schemaComplexTypes = new ArrayList<>();
 
         for (XmlSchemaObject schemaObject : xmlSchema.getItems()) {
             if (schemaObject instanceof XmlSchemaComplexType) {
@@ -701,10 +701,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список SimpleType.
+     * Returns SimpleType list.
      */
     public static List<XmlSchemaSimpleType> getSimpleTypeItems(XmlSchema xmlSchema) {
-        List<XmlSchemaSimpleType> schemaSimpleTypes = new ArrayList<XmlSchemaSimpleType>();
+        List<XmlSchemaSimpleType> schemaSimpleTypes = new ArrayList<>();
 
         for (XmlSchemaObject schemaObject : xmlSchema.getItems()) {
             if (schemaObject instanceof XmlSchemaSimpleType) {
@@ -715,19 +715,19 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает новые элементы последовательности.
+     * Returns new sequence elements.
      */
     private static List<String> getNewElementsInComplexTypeSequenceElements(List<XmlSchemaElement> oldElements, List<XmlSchemaElement> newElements) {
-        List<String> diffs = new ArrayList<String>();
+        List<String> diffs = new ArrayList<>();
 
-        // получим список всех имен старых элементов
-        List<String> oldElementNames = new ArrayList<String>();
+        // get list with old element names
+        List<String> oldElementNames = new ArrayList<>();
         for (XmlSchemaElement schemaElement : oldElements) {
             oldElementNames.add(schemaElement.getName());
         }
 
-        // получим список имен новых элементов
-        List<String> newElementNames = new ArrayList<String>();
+        // get list with new element names
+        List<String> newElementNames = new ArrayList<>();
         for (XmlSchemaElement schemaElement : newElements) {
             newElementNames.add(schemaElement.getName());
         }
@@ -736,21 +736,20 @@ public class SchemaHelper {
 
         for (XmlSchemaElement element : newElements) {
             if (addedElements.contains(element.getName())) {
-                diffs.add("Добавлен элемент " + element.getName() + "\n Описание: " + getElementTypeAnnotation(element));
+                diffs.add("A new element was added " + element.getName() + "\n Description: " + getElementTypeAnnotation(element));
             }
         }
         return diffs;
     }
 
     /**
-     * Возвращает список добавленных элементов.
+     * Returns list of added elements.
      */
     public static List<String> getAddedElements(List<String> oldElementsNames, List<String> newElementsNames) {
-        List<String> addedElements = new ArrayList<String>();
+        List<String> addedElements = new ArrayList<>();
 
-        // перебираем новые элементы
         for (String elementName : newElementsNames) {
-            // если новый элемент не найден в старом списке, то значит он добавлен
+            // if element was found in list then it is new element
             if (!oldElementsNames.contains(elementName)) {
                 addedElements.add(elementName);
             }
@@ -758,21 +757,18 @@ public class SchemaHelper {
         return addedElements;
     }
 
-
     /**
-     * Возвращает удаленые элементы последовательности.
+     * Returns removed elements in ComplexType sequence.
      */
     private static List<String> getRemovedElementsInComplexTypeSequenceElements(List<XmlSchemaElement> oldElements, List<XmlSchemaElement> newElements) {
-        List<String> diffs = new ArrayList<String>();
+        List<String> diffs = new ArrayList<>();
 
-        // получим список всех имен старых элементов
-        List<String> oldElementNames = new ArrayList<String>();
+        List<String> oldElementNames = new ArrayList<>();
         for (XmlSchemaElement schemaElement : oldElements) {
             oldElementNames.add(schemaElement.getName());
         }
 
-        // получим список имен новых элементов
-        List<String> newElementNames = new ArrayList<String>();
+        List<String> newElementNames = new ArrayList<>();
         for (XmlSchemaElement schemaElement : newElements) {
             newElementNames.add(schemaElement.getName());
         }
@@ -781,21 +777,19 @@ public class SchemaHelper {
 
         for (XmlSchemaElement element : oldElements) {
             if (removedElements.contains(element.getName())) {
-                diffs.add("Удален элемент " + element.getName() + "\n Описание: " + getElementTypeAnnotation(element));
+                diffs.add("Removed element " + element.getName() + "\n Description: " + getElementTypeAnnotation(element));
             }
         }
         return diffs;
     }
 
     /**
-     * Возвращает список удаленных элементов.
+     * Returns list of removed elements.
      */
     public static List<String> getRemovedElements(List<String> oldElementsNames, List<String> newElementsNames) {
-        List<String> removedElements = new ArrayList<String>();
+        List<String> removedElements = new ArrayList<>();
 
-        // перебираем старые элементы
         for (String elementName : oldElementsNames) {
-            // если старый элемент не найден в новом списке, то значит он удален
             if (!newElementsNames.contains(elementName)) {
                 removedElements.add(elementName);
             }
@@ -804,7 +798,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает Annotation у Choice.
+     * Returns Annotation from Choice.
      */
     public static String getChoiceAnnotation(XmlSchemaChoice choice) {
         String description;
@@ -817,37 +811,37 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает Annotation у Element.
+     * Returns Annotation from Element.
      */
     public static String getElementTypeAnnotation(XmlSchemaElement element) {
         return ((XmlSchemaDocumentation) element.getAnnotation().getItems().get(0)).getMarkup().item(0).getNodeValue();
     }
 
     /**
-     * Возвращает Annotation у ComplexType.
+     * Returns Annotation from ComplexType.
      */
     public static String getComplexTypeAnnotation(XmlSchemaComplexType complexType) {
         String description;
         try {
             description = ((XmlSchemaDocumentation) complexType.getAnnotation().getItems().get(0)).getMarkup().item(0).getNodeValue();
             return description;
-        } catch (NullPointerException ignore) {}
-
+        } catch (NullPointerException ignore) {
+        }
         return null;
     }
 
     /**
-     * Возвращает Annotation у SimpleType.
+     * Returns Annotation from SimpleType.
      */
     public static String getSimpleTypeAnnotation(XmlSchemaSimpleType simpleType) {
         return ((XmlSchemaDocumentation) simpleType.getAnnotation().getItems().get(0)).getMarkup().item(0).getNodeValue();
     }
 
     /**
-     * Возвращает все импорты схемы.
+     * Returns all imports from schema.
      */
     public static List<XmlSchemaImport> getSchemaImports(XmlSchema schema) {
-        List<XmlSchemaImport> schemaImports = new ArrayList<XmlSchemaImport>();
+        List<XmlSchemaImport> schemaImports = new ArrayList<>();
         for (XmlSchemaObject schemaObject : schema.getItems()) {
             if (schemaObject instanceof XmlSchemaImport) {
                 schemaImports.add((XmlSchemaImport) schemaObject);
@@ -857,17 +851,17 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает определение элемента схемы.
+     * Returns definition of schema element.
      */
     public static Map<QName, XmlSchemaElement> getElementsMap(XmlSchema schema) {
-        return new HashMap<QName, XmlSchemaElement>(schema.getElements());
+        return new HashMap<>(schema.getElements());
     }
 
     /**
-     * Возвращает список XmlSchemaElement элементов последовательности в sequence.
+     * Returns XmlSchemaElement list of elements in sequence.
      */
     public static List<XmlSchemaElement> getSequenceElements(XmlSchemaComplexContentExtension extension) {
-        List<XmlSchemaElement> elements = new ArrayList<XmlSchemaElement>();
+        List<XmlSchemaElement> elements = new ArrayList<>();
         try {
             for (XmlSchemaSequenceMember sequenceMember : ((XmlSchemaSequence) extension.getParticle()).getItems()) {
                 if (sequenceMember instanceof XmlSchemaElement) {
@@ -881,10 +875,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список XmlSchemaElement элементов последовательности в sequence.
+     * Returns XmlSchemaElement list in sequence.
      */
     public static List<XmlSchemaElement> getSequenceElements(List<XmlSchemaSequenceMember> sequenceMembers) {
-        List<XmlSchemaElement> elements = new ArrayList<XmlSchemaElement>();
+        List<XmlSchemaElement> elements = new ArrayList<>();
         try {
             for (XmlSchemaSequenceMember sequenceMember : sequenceMembers) {
                 if (sequenceMember instanceof XmlSchemaElement) {
@@ -898,10 +892,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает все XmlSchemaChoice элементы в последовательности.
+     * Returns all XmlSchemaChoice element in sequence.
      */
     public static List<XmlSchemaChoice> getSequenceChoices(XmlSchemaComplexContentExtension extension) {
-        List<XmlSchemaChoice> elements = new ArrayList<XmlSchemaChoice>();
+        List<XmlSchemaChoice> elements = new ArrayList<>();
 
         for (XmlSchemaSequenceMember sequenceMember : ((XmlSchemaSequence) extension.getParticle()).getItems()) {
             if (sequenceMember instanceof XmlSchemaChoice) {
@@ -912,10 +906,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает все XmlSchemaChoice элементы в последовательности.
+     * Returns all XmlSchemaChoice elements in sequence.
      */
     public static List<XmlSchemaChoice> getSequenceChoices(List<XmlSchemaSequenceMember> sequenceMembers) {
-        List<XmlSchemaChoice> elements = new ArrayList<XmlSchemaChoice>();
+        List<XmlSchemaChoice> elements = new ArrayList<>();
 
         for (XmlSchemaSequenceMember sequenceMember : sequenceMembers) {
             if (sequenceMember instanceof XmlSchemaChoice) {
@@ -926,15 +920,14 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает добавленные импорты.
+     * Returns added imports.
      */
     public static List<String> getAddedImports(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
-        List<String> addedImports = new ArrayList<String>();
+        List<String> addedImports = new ArrayList<>();
 
         List<String> oldImports = TreeHelper.getSchemaImports(actualSchemaTree);
         List<String> newImports = TreeHelper.getSchemaImports(schemaToCompareTree);
 
-        // если новый элемент не содержится среди старых, то значит он был добавлен
         for (String importName : newImports) {
             if (!oldImports.contains(importName)) {
                 addedImports.add(importName);
@@ -944,15 +937,14 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает удаленные импорты.
+     * Returns removed imports.
      */
     public static List<String> getRemovedImports(TreeNode<Object> actualSchemaTree, TreeNode<Object> schemaToCompareTree) {
-        List<String> removedImports = new ArrayList<String>();
+        List<String> removedImports = new ArrayList<>();
 
         List<String> oldImports = TreeHelper.getSchemaImports(actualSchemaTree);
         List<String> newImports = TreeHelper.getSchemaImports(schemaToCompareTree);
 
-        // если старый элемент не содержится среди новых, то значит он был удален
         for (String importName : oldImports) {
             if (!newImports.contains(importName)) {
                 removedImports.add(importName);
@@ -962,12 +954,11 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список имен SimpleType или ComplexType элементов, которые есть в обоих схемах.
+     * Returns list of SimpleType names or ComplexType elements, which existed in both schemas.
      */
     public static List<String> getSameTypeNames(List<String> oldAfTypeNames, List<String> newAfTypeNames) {
-        List<String> sameTypeElements = new ArrayList<String>();
+        List<String> sameTypeElements = new ArrayList<>();
 
-        // если элемент из старой схемы содержится в новой, то добавляем в список
         for (String oldName : oldAfTypeNames) {
             if (newAfTypeNames.contains(oldName)) {
                 sameTypeElements.add(oldName);
@@ -977,10 +968,10 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает список элементов с определенными именами. Порядок может не совпадать, надо тестировать.
+     * Returns list of elements with specified names. Order could be important and should be tested.
      */
     public static List<XmlSchemaElement> getElementsFromComplexTypeBySpecificNames(List<XmlSchemaElement> elements, List<String> elementsNames) {
-        List<XmlSchemaElement> specificElements = new ArrayList<XmlSchemaElement>();
+        List<XmlSchemaElement> specificElements = new ArrayList<>();
 
         for (XmlSchemaElement element : elements) {
             if (elementsNames.contains(element.getName())) {
@@ -991,15 +982,14 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает результат сравнения SimpleType типов.
+     * Returns result of comparison ofSimpleType types.
      */
-    public static List<String> getDifferenceBetweenSimpleTypes(List<XmlSchemaSimpleType> oldSimpleTypes,
-                                                               List<XmlSchemaSimpleType> newSimpleTypes) {
-        List<String> differences = new ArrayList<String>();
+    public static List<String> getDifferenceBetweenSimpleTypes(List<XmlSchemaSimpleType> oldSimpleTypes, List<XmlSchemaSimpleType> newSimpleTypes) {
+        List<String> differences = new ArrayList<>();
 
         if (oldSimpleTypes.size() != newSimpleTypes.size()) {
             try {
-                throw new Exception("Списки для сравнения простых типов не совпадают по длине");
+                throw new Exception("ComplexType list have different size");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1007,31 +997,28 @@ public class SchemaHelper {
 
         for (int idx = 0; idx < oldSimpleTypes.size() && idx < newSimpleTypes.size(); idx++) {
 
-            // сравним аннотации
+            // annotations comparison
             String oldAnnotationDescription = SchemaHelper.getSimpleTypeAnnotation(oldSimpleTypes.get(idx));
             String newAnnotationDescription = SchemaHelper.getSimpleTypeAnnotation(newSimpleTypes.get(idx));
 
-            if (oldAnnotationDescription != null && newAnnotationDescription != null
-                    && !oldAnnotationDescription.equals(newAnnotationDescription)){
-                differences.add("Для SimpleType элемента " + newSimpleTypes.get(idx).getName() + " изменено описание: " + newAnnotationDescription);
+            if (oldAnnotationDescription != null && newAnnotationDescription != null && !oldAnnotationDescription.equals(newAnnotationDescription)) {
+                differences.add("For SimpleType element " + newSimpleTypes.get(idx).getName() + " changed description: " + newAnnotationDescription);
             }
 
             // restriction id
             String oldRestrictionId = oldSimpleTypes.get(idx).getId();
             String newRestrictionId = newSimpleTypes.get(idx).getId();
 
-            if (oldRestrictionId != null && newRestrictionId != null
-                    && !oldRestrictionId.equals(newRestrictionId)) {
-                differences.add("Для SimpleType элемента " + newSimpleTypes.get(idx).getName() + " изменен id: " + newRestrictionId);
+            if (oldRestrictionId != null && newRestrictionId != null && !oldRestrictionId.equals(newRestrictionId)) {
+                differences.add("For SimpleType element " + newSimpleTypes.get(idx).getName() + " changed id: " + newRestrictionId);
             }
 
             // restriction base
             String oldRestrictionBase = oldSimpleTypes.get(idx).getQName().getLocalPart();
             String newRestrictionBase = newSimpleTypes.get(idx).getQName().getLocalPart();
 
-            if (oldRestrictionBase != null && newRestrictionBase != null
-                    && !oldRestrictionBase.equals(newRestrictionBase)) {
-                differences.add("Для SimpleType элемента " + newSimpleTypes.get(idx).getName() + " изменено значение base :");
+            if (oldRestrictionBase != null && newRestrictionBase != null && !oldRestrictionBase.equals(newRestrictionBase)) {
+                differences.add("For SimpleType element " + newSimpleTypes.get(idx).getName() + " changed base value:");
             } // ignore any attributes
 
             // restriction facets
@@ -1040,13 +1027,13 @@ public class SchemaHelper {
             List<XmlSchemaFacet> newFacets = ((XmlSchemaSimpleTypeRestriction) newSimpleTypes.get(idx).getContent()).getFacets();
 
             // added new facets
-            // removed pre existing facets
+            // removed preexisting facets
             // difference between same facets value
             List<String> facetsChanges = SchemaHelper.getDifferenceBetweenFacets(oldFacets, newFacets);
 
             if (facetsChanges.size() != 0) {
                 for (String facetsDiffInfo : facetsChanges) {
-                    differences.add("В SimpleType элементе " + newSimpleTypes.get(idx).getName() + " " + facetsDiffInfo);
+                    differences.add("In SimpleType element " + newSimpleTypes.get(idx).getName() + " " + facetsDiffInfo);
                 }
             }
         }
@@ -1054,17 +1041,17 @@ public class SchemaHelper {
     }
 
     /**
-     * Возвращает изменения в Facets. Учитывает изменения в следующих элементах:
+     * Returns changees in Facets. Changes in elements are in count:
      * XmlSchemaEnumerationFacet, XmlSchemaMaxExclusiveFacet, XmlSchemaMaxInclusiveFacet, XmlSchemaMinExclusiveFacet,
      * XmlSchemaMinInclusiveFacet, XmlSchemaPatternFacet, XmlSchemaWhiteSpaceFacet.
-     *
-     * А также XmlSchemaNumericFacet: XmlSchemaFractionDigitsFacet, XmlSchemaLengthFacet, XmlSchemaMaxLengthFacet,
+     * <p>
+     * And also XmlSchemaNumericFacet: XmlSchemaFractionDigitsFacet, XmlSchemaLengthFacet, XmlSchemaMaxLengthFacet,
      * XmlSchemaMinLengthFacet, XmlSchemaTotalDigitsFacet.
      */
     private static List<String> getDifferenceBetweenFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
 
-        // список всех XmlSchemaEnumerationFacet
-        List<XmlSchemaEnumerationFacet> oldEnumerationFacets = new ArrayList<XmlSchemaEnumerationFacet>();
+        // list of all XmlSchemaEnumerationFacet
+        List<XmlSchemaEnumerationFacet> oldEnumerationFacets = new ArrayList<>();
 
         for (XmlSchemaFacet facet : oldFacets) {
             if (facet instanceof XmlSchemaEnumerationFacet) {
@@ -1072,76 +1059,77 @@ public class SchemaHelper {
             }
         }
 
-        List<XmlSchemaEnumerationFacet> newEnumerationFacets = new ArrayList<XmlSchemaEnumerationFacet>();
+        List<XmlSchemaEnumerationFacet> newEnumerationFacets = new ArrayList<>();
         for (XmlSchemaFacet facet : newFacets) {
             if (facet instanceof XmlSchemaEnumerationFacet) {
                 newEnumerationFacets.add((XmlSchemaEnumerationFacet) facet);
             }
         }
 
-        List<String> facetDiffs = new ArrayList<String>();
+        List<String> facetDiffs = new ArrayList<>();
 
         // TODO: refactoring
-        // ограничения enumeration
+        // enumeration restrictions
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenEnumerationFacets(oldEnumerationFacets, newEnumerationFacets));
 
-        // ограничения Exclusive
+        // Exclusive restrictions
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenMaxExclusiveFacets(oldFacets, newFacets));
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenMinExclusiveFacets(oldFacets, newFacets));
 
-        // ограничения Inclusive
+        // Inclusive restrictions
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenMaxInclusiveFacets(oldFacets, newFacets));
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenMinInclusiveFacets(oldFacets, newFacets));
 
-        // ограничение fractionDigits
+        // fractionDigits restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenFractionDigitsFacets(oldFacets, newFacets));
 
-        // ограничение length
+        // length restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenLengthFacets(oldFacets, newFacets));
-        // ограничение maxLength
+        // maxLength restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenMaxLengthFacets(oldFacets, newFacets));
-        // ограничение minLength
+        // minLength restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenMinLengthFacets(oldFacets, newFacets));
-        // ограничение totalDigits
+        // totalDigits restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenTotalDigitsFacets(oldFacets, newFacets));
 
-        // органичение pattern
+        // restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenPatternFacets(oldFacets, newFacets));
 
-        // органичение whiteSpace
+        // whiteSpace restriction
         facetDiffs.addAll(SchemaHelper.getDifferenceBetweenWhiteSpaceFacets(oldFacets, newFacets));
 
         return facetDiffs;
     }
 
     /**
-     * Добавляет информацию о изменениях в Restriction в список изменений.
+     * Add information about chagnes in Restriction to diffs.
      */
     private static List<String> getDiffInfoFromFacets(XmlSchemaFacet oldFacet, XmlSchemaFacet newFacet, String label) {
-        List<String> diffs = new ArrayList<String>();
+        List<String> diffs = new ArrayList<>();
 
-        // добавлено новое ограничение
+        // added new restriction
         if (oldFacet == null && newFacet != null) {
-            diffs.add("добавлено новое ограничение " + label + " со значением: " + newFacet.getValue());
+            diffs.add("added new restriction " + label + " with value: " + newFacet.getValue());
         }
 
-        // удалено старое органичение
+        // removed old restriction
         if (newFacet == null && oldFacet != null) {
-            diffs.add("удалено ранее объявленное ограничение " + label + " со значением: " + oldFacet.getValue());
+            diffs.add("removed old restriction " + label + " with value: " + oldFacet.getValue());
         }
 
-        // изменилось значение
+        // value was changed
         if (oldFacet != null && newFacet != null && !oldFacet.getValue().equals(newFacet.getValue())) {
-            diffs.add("изменено значение ограничения " + label + " с " + oldFacet.getValue() + " на " + newFacet.getValue());
+            diffs.add("restriction value was changed  " + label + " from " + oldFacet.getValue() + " to " + newFacet.getValue());
         }
         return diffs;
     }
 
     /**
-     * Ищет изменения между TotalDigits в Facet.
+     * Returns difference between TotalDigits in Facet.
      */
     private static List<String> getDifferenceBetweenTotalDigitsFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaTotalDigitsFacet oldTotalDigitsFacet = null;
+
         for (XmlSchemaFacet facet : oldFacets) {
             if (facet instanceof XmlSchemaTotalDigitsFacet) {
                 oldTotalDigitsFacet = (XmlSchemaTotalDigitsFacet) facet;
@@ -1178,10 +1166,11 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между MaxLength в Facet.
+     * Returns changed beetween MaxLength in Facet.
      */
     private static List<String> getDifferenceBetweenMaxLengthFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaMaxLengthFacet oldMaxLengthFacet = null;
+
         for (XmlSchemaFacet facet : oldFacets) {
             if (facet instanceof XmlSchemaMaxLengthFacet) {
                 oldMaxLengthFacet = (XmlSchemaMaxLengthFacet) facet;
@@ -1198,7 +1187,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между Length в Facet.
+     * Returns changes between Length in Facet.
      */
     private static List<String> getDifferenceBetweenLengthFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaLengthFacet oldLengthFacet = null;
@@ -1218,7 +1207,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между FractionDigits в Facet.
+     * Returns changed between FractionDigits in Facet.
      */
     private static List<String> getDifferenceBetweenFractionDigitsFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaFractionDigitsFacet oldFractionDigitsFacet = null;
@@ -1238,7 +1227,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между WhiteSpace в facet.
+     * Returns changes between WhiteSpace in Facet.
      */
     private static List<String> getDifferenceBetweenWhiteSpaceFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaWhiteSpaceFacet oldWhiteSpaceFacet = null;
@@ -1258,7 +1247,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между Pattern в facet.
+     * Returns changes between Pattern in Facet.
      */
     private static List<String> getDifferenceBetweenPatternFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaPatternFacet oldPatternFacet = null;
@@ -1278,7 +1267,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между MinInclusive
+     * Returns changes between MinInclusive in Facet.
      */
     private static List<String> getDifferenceBetweenMinInclusiveFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaMinInclusiveFacet oldMinInclusiveFacet = null;
@@ -1298,7 +1287,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между MaxInclusive в Facets.
+     * Returns changes between MaxInclusive in Facets.
      */
     private static List<String> getDifferenceBetweenMaxInclusiveFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaMaxInclusiveFacet oldMaxInclusiveFacet = null;
@@ -1318,7 +1307,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между MinExclusive
+     * Returns changes between MinExclusive in Facets.
      */
     private static List<String> getDifferenceBetweenMinExclusiveFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaMinExclusiveFacet oldMinExclusiveFacet = null;
@@ -1338,7 +1327,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Ищет изменения между MaxExclusive в Facets.
+     * Returns changes between MaxExclusive in Facets.
      */
     private static List<String> getDifferenceBetweenMaxExclusiveFacets(List<XmlSchemaFacet> oldFacets, List<XmlSchemaFacet> newFacets) {
         XmlSchemaMaxExclusiveFacet oldMaxExclusiveFacet = null;
@@ -1358,25 +1347,25 @@ public class SchemaHelper {
     }
 
     /**
-     * Изменения среди enumeration.
+     * Returns changes between enumeration in Facets.
      */
     private static List<String> getDifferenceBetweenEnumerationFacets(List<XmlSchemaEnumerationFacet> oldEnumerationFacets, List<XmlSchemaEnumerationFacet> newEnumerationFacets) {
-        List<String> diffs = new ArrayList<String>();
+        List<String> diffs = new ArrayList<>();
 
-        List<String> oldEnumerationValues = new ArrayList<String>();
+        List<String> oldEnumerationValues = new ArrayList<>();
         for (XmlSchemaEnumerationFacet facet : oldEnumerationFacets) {
             oldEnumerationValues.add((String) facet.getValue());
         }
 
-        List<String> newEnumerationValues = new ArrayList<String>();
+        List<String> newEnumerationValues = new ArrayList<>();
         for (XmlSchemaEnumerationFacet facet : newEnumerationFacets) {
             newEnumerationValues.add((String) facet.getValue());
         }
 
-        // добавлены новые enumeration
+        // added new enumeration
         List<String> getNewEnumerationValues = SchemaHelper.getNewEnumerationValues(oldEnumerationValues, newEnumerationValues);
 
-        // удалены старые enumeration
+        // removed old enumeration
         List<String> getPreExistingEnumerationValues = SchemaHelper.getPreExistingEnumerationValues(oldEnumerationValues, newEnumerationValues);
 
         diffs.addAll(getNewEnumerationValues);
@@ -1386,26 +1375,26 @@ public class SchemaHelper {
     }
 
     /**
-     * Находит новые Enumeration values.
+     * Returns new Enumeration values.
      */
     private static List<String> getNewEnumerationValues(List<String> oldEnumerationValues, List<String> newEnumerationValues) {
-        List<String> addedEnumerations = new ArrayList<String>();
+        List<String> addedEnumerations = new ArrayList<>();
         for (String value : newEnumerationValues) {
             if (!oldEnumerationValues.contains(value)) {
-                addedEnumerations.add("Добавлен новый элемент Enumeration со значением: " + value);
+                addedEnumerations.add("added new Enumeration element with value: " + value);
             }
         }
         return addedEnumerations;
     }
 
     /**
-     * Находит ранее существовавшие Enumeration values.
+     * Returns old Enumeration values.
      */
     private static List<String> getPreExistingEnumerationValues(List<String> oldEnumerationValues, List<String> newEnumerationValues) {
-        List<String> removedEnumerations = new ArrayList<String>();
+        List<String> removedEnumerations = new ArrayList<>();
         for (String value : oldEnumerationValues) {
             if (!newEnumerationValues.contains(value)) {
-                removedEnumerations.add("Удален ранее существующий Enumeration со значением: " + value);
+                removedEnumerations.add("removed existed Enumeration with value: " + value);
             }
         }
         return removedEnumerations;

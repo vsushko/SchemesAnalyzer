@@ -158,7 +158,7 @@ public class DifferenceResolverImpl implements DifferenceResolver {
     }
 
     /**
-     * Returns list of changes which were identified during schemas difference comparison
+     * Returns list of changes which were identified during schemas difference comparison.
      */
     @Override
     public List<String> getDifferences() {

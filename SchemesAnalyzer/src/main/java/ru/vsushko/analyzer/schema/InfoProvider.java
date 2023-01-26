@@ -5,5 +5,6 @@ package ru.vsushko.analyzer.schema;
  * Date: 11.11.14.
  */
 public interface InfoProvider {
+
     String getSchemaName(int indx);
 }
