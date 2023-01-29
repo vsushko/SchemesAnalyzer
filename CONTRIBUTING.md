@@ -66,7 +66,7 @@ You can import the SchemesAnalyzer project into IntelliJ IDEA via:
 - Select **File > Open**
 - In the subsequent dialog navigate to the root pom.xml file
 - In the subsequent dialog select **Open as Project**
-```
+
 ### Javadoc
 Good Javadoc can help with navigating and understanding code.
 
