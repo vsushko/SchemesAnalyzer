@@ -8,7 +8,7 @@ Bug reports
 -----------
 If you think you have found a bug in SchemesAnalyzer, first make sure that you are testing against the latest version of SchemesAnalyzer - your issue may already have been fixed. If not, search the issues list on GitHub in case a similar issue has already been opened.
 
-It is very helpful if you can prepare a reproduction of the bug. In other words, provide a small test case which we can run to confirm your bug. It makes it easier to find the problem and to fix it. Test cases should be provided as a number of steps to reproduce the bug.
+It is very helpful if you can prepare a reproduction of the bug. In other words, provide a small test case which I can run to confirm your bug. It makes it easier to find the problem and to fix it. Test cases should be provided as a number of steps to reproduce the bug.
 
 Provide as much information as you can. The easier it is for me to recreate your problem, the faster it is likely to be fixed.
 
@@ -62,11 +62,11 @@ SchemesAnalyzer uses the Apache maven for its build.
 
 ### Importing the project into IntelliJ IDEA
 You can import the SchemesAnalyzer project into IntelliJ IDEA via:
-
+```
 Select **File > Open**
 In the subsequent dialog navigate to the root pom.xml file
 In the subsequent dialog select **Open as Project**
-
+```
 ### Javadoc
 Good Javadoc can help with navigating and understanding code.
 
@@ -105,4 +105,4 @@ mvn clean install
 
 Reviewing and accepting your contribution
 -------------------------------------------
-We review every contribution carefully to ensure that the change is of high quality and fits well with the rest of the SchemesAnalyzer codebase. If accepted, I will merge your change and usually take care of backporting it to appropriate branches ourselves.
+I review every contribution carefully to ensure that the change is of high quality and fits well with the rest of the SchemesAnalyzer codebase. If accepted, I will merge your change and usually take care of backporting it to appropriate branches ourselves.
