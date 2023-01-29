@@ -22,13 +22,13 @@
                <content>
                   <TextArea fx:id="textArea" prefColumnCount="2" prefHeight="689.0" prefWidth="694.0" wrapText="true" />
                </content></ScrollPane>
-            <Button fx:id="openOldSchemasButton" layoutX="620.0" layoutY="10.0" mnemonicParsing="false" onAction="#openPreviousSchemasPathFileChooser" prefHeight="30.0" prefWidth="85.0" text="Open" />
+            <Button fx:id="openOldSchemasButton" layoutX="620.0" layoutY="10.0" mnemonicParsing="false" onAction="#openPreviousSchemasPathFileChooser" prefHeight="30.0" prefWidth="85.0" text="Select" />
             <Button fx:id="analyzeButton" layoutX="9.0" layoutY="91.0" mnemonicParsing="false" onAction="#startAnalyzeSchemas" prefHeight="30.0" prefWidth="97.0" text="Compare" />
             <Button fx:id="clearButton" layoutX="119.0" layoutY="92.0" mnemonicParsing="false" onAction="#cleaAllControls" prefHeight="30.0" prefWidth="97.0" text="Reset" />
             <Button fx:id="exitButton" layoutX="620.0" layoutY="91.0" mnemonicParsing="false" onAction="#exit" prefHeight="30.0" prefWidth="85.0" text="Exit" />
             <ProgressBar fx:id="progressBar" layoutX="226.0" layoutY="95.0" prefHeight="23.0" prefWidth="387.0" progress="0.0" />
             <TextField fx:id="textFieldToNewSchemas" layoutX="7.0" layoutY="51.0" prefHeight="30.0" prefWidth="606.0" promptText="Select folder with xsd schemas bundle" />
-            <Button fx:id="openNewSchemasButton" layoutX="620.0" layoutY="51.0" mnemonicParsing="false" onAction="#openRecentSchemasPathFileChooser" prefHeight="30.0" prefWidth="85.0" text="Open" />
+            <Button fx:id="openNewSchemasButton" layoutX="620.0" layoutY="51.0" mnemonicParsing="false" onAction="#openRecentSchemasPathFileChooser" prefHeight="30.0" prefWidth="85.0" text="Select" />
          </children>
       </Pane>Ï
    </children>
