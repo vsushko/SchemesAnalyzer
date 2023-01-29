@@ -500,7 +500,7 @@ public class SchemaHelper {
 
             difference.addAll(SchemaHelper.getDifferenceBetweenExtensionSequencesElementsValues(oldSameElements, newSameElements));
 
-            // if there ara choice, analyze them
+            // if there are choice, analyze them
             List<XmlSchemaChoice> oldChoices = SchemaHelper.getSequenceChoices(oldMemberList);
             List<XmlSchemaChoice> newChoices = SchemaHelper.getSequenceChoices(newMemberList);
 
@@ -637,7 +637,7 @@ public class SchemaHelper {
     }
 
     /**
-     * Returns changes between atributess in XmlSchemaComplexContentExtension.
+     * Returns changes between attributes in XmlSchemaComplexContentExtension.
      */
     private static List<String> getDifferenceBetweenExtensionAttributesValues(List<XmlSchemaAttributeOrGroupRef> oldAttributes, List<XmlSchemaAttributeOrGroupRef> newAttributes) {
         List<String> diffStrings = new ArrayList<>();
