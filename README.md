@@ -19,6 +19,7 @@ limitations under the License.
 
 **SchemesAnalyzer** is a tool for analyzing XSD schema sets. This tool does not require the presence of the Internet, which is suitable for those users who work on the intranet.
 
+![Screenshot](https://github.com/vsushko/SchemesAnalyzer/blob/master/screenshots/img1.png)
 
 ## Table of contents
 - [Installation](#installation)
