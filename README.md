@@ -30,7 +30,7 @@ limitations under the License.
 ## Installation
 
 *   [Installing SchemesAnalyzer from
-    Binary/Source for Windows users](https://github.com/vsushko/SchemesAnalyzer/tree/master/Scripts)
+    Binary/Source for Windows users](https://github.com/vsushko/SchemesAnalyzer/tree/master/Scripts).
 
 ## Quick Start
 
