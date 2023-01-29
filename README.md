@@ -21,21 +21,28 @@ limitations under the License.
 
 ![Screenshot](https://github.com/vsushko/SchemesAnalyzer/blob/master/screenshots/img1.png)
 
+----
+
 ## Table of contents
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Documentation](#documentation)
 - [Contributing](#contributing)
 - [License](#license)
+----
 
 ## Installation
 
 *   [Installing SchemesAnalyzer from
     Binary/Source for Windows users](https://github.com/vsushko/SchemesAnalyzer/tree/master/Scripts).
 
+----
+
 ## Quick Start
 
 *   [Quick Start wiki page](https://github.com/vsushko/SchemesAnalyzer/wiki/Quick-Start).
+
+----
 
 ## Documentation
 
@@ -43,12 +50,18 @@ Documentation, included in this repo in the [`wiki`](https://github.com/vsushko/
 
 Interested in helping with documentation? Read [Contributing documentation](https://github.com/vsushko/SchemesAnalyzer/blob/master/CONTRIBUTING.md).
 
+----
+
 ## Contributing
 
 To report a bug or request a feature, create a [GitHub Issue](https://github.com/vsushko/SchemesAnalyzer/issues). Please ensure someone else hasn’t created an issue for the same topic.
 
 For contribution guidelines, read the [CONTRIBUTING.md](https://github.com/vsushko/SchemesAnalyzer/blob/master/CONTRIBUTING.md) page.
 
+----
+
 ## License
 
 SchemesAnalyzer is under [Apache 2 license](http://www.apache.org/licenses/LICENSE-2.0.html).
+
+----
