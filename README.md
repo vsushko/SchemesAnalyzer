@@ -40,7 +40,8 @@ limitations under the License.
 
 ## Quick Start
 
-*   [Quick Start wiki page](https://github.com/vsushko/SchemesAnalyzer/wiki/Quick-Start).
+*   For the Quick Start see 
+[Application description wiki page](https://github.com/vsushko/SchemesAnalyzer/wiki/Quick-Start).
 
 ----
 
