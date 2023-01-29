@@ -78,6 +78,7 @@ Good Javadoc can help with navigating and understanding code.
 
 ### License Headers
 I require license headers on all Java files. All contributed code should have the following license header:
+
 ```java
 /**
  * Copyright (C) SchemesAnalyzer.2014 Vasiliy Sushko (vasiliy.sushko@gmail.com)
