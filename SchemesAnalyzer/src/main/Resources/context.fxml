@@ -30,6 +30,6 @@
             <TextField fx:id="textFieldToNewSchemas" layoutX="7.0" layoutY="51.0" prefHeight="30.0" prefWidth="606.0" promptText="Select folder with xsd schemas bundle" />
             <Button fx:id="openNewSchemasButton" layoutX="620.0" layoutY="51.0" mnemonicParsing="false" onAction="#openRecentSchemasPathFileChooser" prefHeight="30.0" prefWidth="85.0" text="Select" />
          </children>
-      </Pane>Ï
+      </Pane>
    </children>
 </GridPane>
